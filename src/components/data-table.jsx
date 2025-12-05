@@ -38,8 +38,20 @@ import {
 } from "@/components/ui/table";
 
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChevronsLeftIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsRightIcon, GripVerticalIcon } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  ChevronsLeftIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsRightIcon,
+  GripVerticalIcon,
+} from "lucide-react";
 
 // --------------------------------------
 // EXPORTABLE DRAG HANDLE
@@ -63,9 +75,9 @@ export function DragHandle({ id }) {
 // --------------------------------------
 // DRAGGABLE ROW
 // --------------------------------------
-function DraggableRow({ row }) {
+function DraggableRow({ row, rowIdAccessor }) {
   const { setNodeRef, transform, transition, isDragging } = useSortable({
-    id: row.original.id,
+    id: row.original[rowIdAccessor].toString(),
   });
 
   return (
@@ -90,20 +102,27 @@ function DraggableRow({ row }) {
 // --------------------------------------
 // DATATABLE
 // --------------------------------------
-export function DataTable({ columns, data: initialData }) {
+export function DataTable({
+  columns,
+  data: initialData,
+  rowIdAccessor = "id",
+}) {
   const [data, setData] = React.useState(initialData);
+  React.useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor),
     useSensor(KeyboardSensor)
   );
 
-  const rowIds = data.map((row) => row.id);
+  const rowIds = data.map((row) => row[rowIdAccessor].toString());
 
   const table = useReactTable({
     data,
     columns,
-    getRowId: (row) => row.id.toString(),
+    getRowId: (row) => row[rowIdAccessor].toString(),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -114,8 +133,12 @@ export function DataTable({ columns, data: initialData }) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((prev) => {
-        const oldIndex = prev.findIndex((r) => r.id === active.id);
-        const newIndex = prev.findIndex((r) => r.id === over.id);
+        const oldIndex = prev.findIndex(
+          (r) => r[rowIdAccessor].toString() === active.id
+        );
+        const newIndex = prev.findIndex(
+          (r) => r[rowIdAccessor].toString() === over.id
+        );
         return arrayMove(prev, oldIndex, newIndex);
       });
     }
@@ -136,7 +159,10 @@ export function DataTable({ columns, data: initialData }) {
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <TableHead key={header.id}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -144,9 +170,16 @@ export function DataTable({ columns, data: initialData }) {
             </TableHeader>
 
             <TableBody>
-              <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
+              <SortableContext
+                items={rowIds}
+                strategy={verticalListSortingStrategy}
+              >
                 {table.getRowModel().rows.map((row) => (
-                  <DraggableRow key={row.id} row={row} />
+                  <DraggableRow
+                    key={row.original[rowIdAccessor].toString()}
+                    row={row}
+                    rowIdAccessor={rowIdAccessor}
+                  />
                 ))}
               </SortableContext>
             </TableBody>
