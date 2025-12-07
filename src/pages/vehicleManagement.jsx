@@ -1,122 +1,36 @@
+import { useEffect, useState } from "react";
 import { DataTable } from "../components/data-table";
 import PageBreadcrumb from "../components/common/PageBreadcrumb";
+
 import { Button } from "@/components/ui/button";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, MoreVerticalIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DragHandle } from "@/components/data-table";
-import { MoreVerticalIcon } from "lucide-react";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
+import { toast } from "sonner";
+
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
 
-import { useEffect, useState } from "react";
 import vehicleApi from "@/api/vehicleApi";
 import useNavigator from "@/hooks/use-navigator";
-
-export const vehicleColumns = [
-  {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.vehicleId.toString()} />,
-  },
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(val) => table.toggleAllPageRowsSelected(!!val)}
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center ">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(val) => row.toggleSelected(!!val)}
-        />
-      </div>
-    ),
-  },
-
-  // MATCH YOUR VEHICLE FIELDS HERE
-  {
-    accessorKey: "numberPlate",
-    header: "Plate Number",
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    accessorKey: "passengerCount",
-    header: "Passengers",
-  },
-  {
-    accessorKey: "costPerKm",
-    header: "Cost per KM (LKR)",
-    cell: ({ row }) => `Rs. ${row.original.costPerKm.toFixed(2)}`,
-  },
-  {
-    accessorKey: "bookingPrice",
-    header: "Booking Price (LKR)",
-    cell: ({ row }) => `Rs. ${row.original.bookingPrice.toFixed(2)}`,
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created At",
-    cell: ({ row }) =>
-      new Date(row.original.createdAt).toLocaleDateString("en-US"),
-  },
-
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreVerticalIcon />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => alert(`Vehicle Plate: ${row.original.numberPlate}`)}
-          >
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Delete</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>View</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
 
 export default function VehicleManagement() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const goTo = useNavigator();
 
+  // Load vehicles on mount
   useEffect(() => {
     loadVehicles();
   }, []);
@@ -124,8 +38,6 @@ export default function VehicleManagement() {
   async function loadVehicles() {
     try {
       const response = await vehicleApi.getAllVehicles();
-      console.log("API Data:", response.data);
-
       setVehicles(response.data);
     } catch (error) {
       console.error("Error loading vehicles:", error);
@@ -134,47 +46,162 @@ export default function VehicleManagement() {
     }
   }
 
+  async function handleDeleteConfirm() {
+    setIsDeleting(true);
+
+    try {
+      await toast.promise(vehicleApi.deleteVehicle(selectedVehicle.vehicleId), {
+        loading: "Deleting vehicle...",
+        success: `${selectedVehicle.numberPlate} deleted successfully!`,
+        error: "Failed to delete vehicle. Try again.",
+      });
+
+      setDeleteModalOpen(false);
+      loadVehicles();
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  // COLUMNS (inside component so it can access state)
+  const vehicleColumns = [
+    {
+      id: "drag",
+      header: () => null,
+      cell: ({ row }) => <DragHandle id={row.original.vehicleId.toString()} />,
+    },
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(val) => table.toggleAllPageRowsSelected(!!val)}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(val) => row.toggleSelected(!!val)}
+        />
+      ),
+    },
+
+    { accessorKey: "vehicleName", header: "Vehicle Name" },
+    { accessorKey: "numberPlate", header: "Plate Number" },
+    { accessorKey: "type", header: "Type" },
+    { accessorKey: "passengerCount", header: "Passengers" },
+
+    {
+      accessorKey: "costPerKm",
+      header: "Cost per KM (LKR)",
+      cell: ({ row }) => `Rs. ${row.original.costPerKm.toFixed(2)}`,
+    },
+    {
+      accessorKey: "bookingPrice",
+      header: "Booking Price (LKR)",
+      cell: ({ row }) => `Rs. ${row.original.bookingPrice.toFixed(2)}`,
+    },
+
+    { accessorKey: "status", header: "Status" },
+
+    {
+      accessorKey: "createdAt",
+      header: "Create Date",
+      cell: ({ row }) =>
+        new Date(row.original.createdAt).toLocaleDateString("en-US"),
+    },
+
+    // ACTION MENU
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreVerticalIcon />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => goTo(`/vehicle-edit/${row.original.vehicleId}`)}
+            >
+              Edit
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              onClick={() => {
+                setSelectedVehicle(row.original);
+                setDeleteModalOpen(true);
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              onClick={() => alert("View Vehicle: " + row.original.numberPlate)}
+            >
+              View
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
   return (
     <div className="p-6">
       <PageBreadcrumb title="Vehicle Management" />
-      <div className="bg-white border border-[948E8E] rounded-md shadow-2xl md:pb-3">
-        <div
-          className="
-  flex flex-col md:flex-row
-  px-6 py-3 border-b
-  text-center md:text-left
-  items-center 
-  gap-3 md:gap-0
-"
-        >
+
+      <div className="bg-white border rounded-md shadow-2xl md:pb-3">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row px-6 py-3 border-b items-center gap-3">
           <h1 className="text-xl font-medium w-full md:w-auto">Vehicle List</h1>
 
-          <div className="ml-auto flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto">
-            <Button
-              variant="outline"
-              className="border border-1 border-black w-full md:w-auto"
-              size="lg"
-            >
-              <Download />
-              Export
+          <div className="ml-auto flex flex-col md:flex-row gap-3">
+            <Button variant="outline" className="border border-black" size="lg">
+              <Download /> Export
             </Button>
 
             <Button
-              className="bg-blue-700 text-white hover:bg-blue-950 w-full md:w-auto"
+              className="bg-blue-700 text-white hover:bg-blue-950"
               size="lg"
               onClick={() => goTo("/add-vehicle")}
             >
-              <Plus />
-              Add New Vehicle
+              <Plus /> Add New Vehicle
             </Button>
           </div>
         </div>
+
+        {/* TABLE */}
         <DataTable
           columns={vehicleColumns}
           data={vehicles}
-          rowIdAccessor="vehicleId" // 🔥 add this
-        />{" "}
+          rowIdAccessor="vehicleId"
+        />
       </div>
+
+      {/* DELETE MODAL */}
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting} // ✅ REQUIRED
+        title="Delete Vehicle"
+        message="Are you sure you want to delete"
+        itemName={
+          selectedVehicle
+            ? `${selectedVehicle.type} ${selectedVehicle.numberPlate}`
+            : ""
+        }
+      />
     </div>
   );
 }
