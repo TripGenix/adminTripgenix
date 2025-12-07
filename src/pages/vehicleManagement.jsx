@@ -56,8 +56,10 @@ export default function VehicleManagement() {
         error: "Failed to delete vehicle. Try again.",
       });
 
+      setSelectedVehicle(null);
       setDeleteModalOpen(false);
-      loadVehicles();
+
+      await loadVehicles();
     } finally {
       setIsDeleting(false);
     }
@@ -182,6 +184,7 @@ export default function VehicleManagement() {
 
         {/* TABLE */}
         <DataTable
+          key={vehicles.length}        
           columns={vehicleColumns}
           data={vehicles}
           rowIdAccessor="vehicleId"
@@ -193,7 +196,7 @@ export default function VehicleManagement() {
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        isDeleting={isDeleting} // ✅ REQUIRED
+        isDeleting={isDeleting} 
         title="Delete Vehicle"
         message="Are you sure you want to delete"
         itemName={
