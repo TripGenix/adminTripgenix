@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { DataTable } from "../components/data-table";
-import PageBreadcrumb from "../components/common/PageBreadcrumb";
+import { DataTable } from "../../components/data-table";
+import PageBreadcrumb from "../../components/common/PageBreadcrumb";
 
 import { Button } from "@/components/ui/button";
 import { Plus, Download, MoreVerticalIcon } from "lucide-react";
@@ -129,7 +129,7 @@ export default function VehicleManagement() {
 
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => goTo(`/vehicle-edit/${row.original.vehicleId}`)}
+              onClick={() => goTo(`edit/${row.original.vehicleId}`)}
             >
               Edit
             </DropdownMenuItem>
@@ -175,7 +175,7 @@ export default function VehicleManagement() {
             <Button
               className="bg-blue-700 text-white hover:bg-blue-950"
               size="lg"
-              onClick={() => goTo("/add-vehicle")}
+              onClick={() => goTo("/vehicle/add")}
             >
               <Plus /> Add New Vehicle
             </Button>

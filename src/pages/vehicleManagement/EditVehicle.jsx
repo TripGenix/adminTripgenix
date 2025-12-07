@@ -206,7 +206,7 @@ export default function EditVehicle() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
             {/* VEHICLE GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Name */}
               <FormField
                 control={form.control}
@@ -293,8 +293,9 @@ export default function EditVehicle() {
               />
 
               {/* EXISTING IMAGES */}
+              <div>
               {existingVehicle.vehicleImages?.length > 0 && (
-                <div className="col-span-1 sm:col-span-2 lg:col-span-3">
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 ">
                   <h3 className="font-semibold mb-2">Current Vehicle Images</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {existingVehicle.vehicleImages.map((url, i) => (
@@ -323,8 +324,10 @@ export default function EditVehicle() {
                   </FormItem>
                 )}
               />
+              </div>
 
               {/* PDF Upload */}
+              <div>
               <FormField
                 control={form.control}
                 name="documents"
@@ -364,6 +367,7 @@ export default function EditVehicle() {
                   </FormItem>
                 )}
               />
+              </div>
 
               {/* STATUS */}
               <FormField

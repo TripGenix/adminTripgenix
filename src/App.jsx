@@ -1,11 +1,11 @@
 import Layout from "@/Layout/Layout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "@/pages/dashboard";
-import VehicleManagement from "@/pages/vehicleManagement";
+import VehicleManagement from "@/pages/vehicleManagement/vehicleManagement";
 import Trip from "@/pages/trips";
-import AddVehicle from "@/pages/AddVehicle";
+import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
 import { Toaster } from "sonner";
-import EditVehicle from "@/pages/EditVehicle";
+import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
 
 function App() {
   return (
@@ -15,9 +15,14 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/trips" element={<Trip />} />
-          <Route path="/Vehicle" element={<VehicleManagement />} />
-          <Route path="/add-vehicle" element={<AddVehicle />} />
-          <Route path="/vehicle-edit/:id" element={<EditVehicle />} />
+
+          {/* Vehicle parent */}
+          <Route path="/vehicle">
+            <Route index element={<VehicleManagement />} /> {/* /vehicle */}
+            <Route path="add" element={<AddVehicle />} /> {/* /vehicle/add */}
+            <Route path="edit/:id" element={<EditVehicle />} />
+          </Route>
+          
         </Routes>
       </Layout>
     </BrowserRouter>
