@@ -51,5 +51,6 @@ export default function DeleteConfirmModal({
         </div>
       </DialogContent>
     </Dialog>
+
   );
 }
