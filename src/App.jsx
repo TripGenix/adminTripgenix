@@ -5,10 +5,13 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
-import VehicleManagement from "@/pages/vehicleManagement";
+import VehicleManagement from "@/pages/vehicleManagement/vehicleManagement";
 import Trip from "@/pages/trips";
 import AccountSettings from "@/pages/AccountSettings";
-import { Toaster } from "react-hot-toast";
+import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
+import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
+import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
+import { Toaster } from "sonner";
 
 function App() {
 
@@ -24,8 +27,10 @@ function App() {
 
   return (
     <BrowserRouter>
-    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-        <Routes>
+    <Routes>
+       <Toaster position="top-right" richColors closeButton />
+       <Route path="/" element={<Dashboard />} />
+        <Route path="/trips" element={<Trip />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/add-admin" element={<Register />} /> 
                 <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -58,7 +63,14 @@ function App() {
 
                 <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
                 <Route path="/settings" element={<AccountSettings />} />
+           
           
+           {/* Vehicle parent */}
+          <Route path="/vehicle">
+            <Route index element={<VehicleManagement />} /> {/* /vehicle */}
+            <Route path="add" element={<AddVehicle />} /> {/* /vehicle/add */}
+            <Route path="edit/:id" element={<EditVehicle />} />
+          </Route>
 
         </Routes>
     </BrowserRouter>   
