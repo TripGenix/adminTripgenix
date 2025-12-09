@@ -14,7 +14,7 @@ import {
   ListIcon,
   SearchIcon,
   SettingsIcon,
-  UsersIcon,
+  CarTaxiFront,
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -44,7 +44,7 @@ const data = {
     {
       title: "Vehicle",
       url: "/Vehicle",
-      icon: ListIcon,
+      icon: CarTaxiFront,
     },
     {
       title: "Trips",
