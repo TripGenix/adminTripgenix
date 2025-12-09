@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const axiosClient = axios.create({
+const axiosClientVehicles = axios.create({
   baseURL: "http://localhost:8080/vehicleController/api/v1",
   headers: {
     "Content-Type": "application/json",
@@ -8,4 +8,4 @@ const axiosClient = axios.create({
   
 });
 
-export default axiosClient;
+export default axiosClientVehicles;

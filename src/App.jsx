@@ -13,6 +13,7 @@ import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
 import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
 
 import { Toaster } from "sonner";
+import DriverManagement from "./pages/DriverManagement/driverManagement";
 
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
@@ -50,6 +51,12 @@ function App() {
                   {/* Vehicle Routes */}
                   <Route path="vehicle">
                     <Route index element={<VehicleManagement />} />
+                    <Route path="add" element={<AddVehicle />} />
+                    <Route path="edit/:id" element={<EditVehicle />} />
+                  </Route>
+
+                   <Route path="driver-management">
+                    <Route index element={<DriverManagement />} />
                     <Route path="add" element={<AddVehicle />} />
                     <Route path="edit/:id" element={<EditVehicle />} />
                   </Route>
