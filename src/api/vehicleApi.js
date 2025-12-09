@@ -1,4 +1,4 @@
-import axiosClient from "./axiosClient";
+import axiosClient from "./axioClients/axiosClientVehicle";
 
 const vehicleApi = {
   getAllVehicles() {

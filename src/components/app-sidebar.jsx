@@ -15,6 +15,7 @@ import {
   SearchIcon,
   SettingsIcon,
   CarTaxiFront,
+  Users
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -22,6 +23,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import { useAuthUser } from "@/hooks/use-auth-user";
+import { BiTrip } from "react-icons/bi";
 
 import {
   Sidebar,
@@ -42,15 +44,21 @@ const data = {
       icon: LayoutDashboardIcon,
     },
     {
+      title: "Trips",
+      url: "/Trips",
+      icon: BiTrip,
+    },
+    {
       title: "Vehicle",
       url: "/Vehicle",
       icon: CarTaxiFront,
     },
     {
-      title: "Trips",
-      url: "/Trips",
-      icon: BarChartIcon,
-    }
+      title: "Drivers",
+      url: "/driver-management",
+      icon: Users,
+    },
+    
     
   ],
   // navClouds: [
