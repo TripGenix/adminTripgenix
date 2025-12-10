@@ -110,17 +110,31 @@ export default function DriverManagement() {
     {
       accessorKey: "firstName",
       header: "Full Name",
-      cell: ({ row }) =>
-        `${row.original.firstName} ${row.original.lastName}`,
+      cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
     },
 
     // DOB
     {
       accessorKey: "dateOfBirth",
-      header: "DOB",
-      cell: ({ row }) =>
-        new Date(row.original.dateOfBirth).toLocaleDateString("en-US"),
+      header: "Age",
+      cell: ({ row }) => {
+        const dob = new Date(row.original.dateOfBirth);
+        const today = new Date();
+
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const dayDiff = today.getDate() - dob.getDate();
+
+        // adjust if birthday hasn't happened yet this year
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+          age--;
+        }
+
+        return age;
+      },
     },
+
+    { accessorKey: "nicNumber", header: "Nic Number" },
 
     // PHONES
     { accessorKey: "phone1", header: "Phone 1" },
@@ -148,12 +162,6 @@ export default function DriverManagement() {
     },
 
     // CREATED DATE
-    {
-      accessorKey: "createdAt",
-      header: "Created At",
-      cell: ({ row }) =>
-        new Date(row.original.createdAt).toLocaleDateString("en-US"),
-    },
 
     // ACTION MENU
     {
@@ -187,9 +195,7 @@ export default function DriverManagement() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() =>
-                alert("Driver: " + row.original.firstName)
-              }
+              onClick={() => alert("Driver: " + row.original.firstName)}
             >
               View
             </DropdownMenuItem>
@@ -216,7 +222,7 @@ export default function DriverManagement() {
             <Button
               className="bg-blue-700 text-white hover:bg-blue-950"
               size="lg"
-              onClick={() => goTo("/drivers/add")}
+              onClick={() => goTo("/driver-management/add")}
             >
               <Plus /> Add New Driver
             </Button>

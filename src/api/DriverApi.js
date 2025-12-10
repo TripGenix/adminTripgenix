@@ -18,7 +18,7 @@ const driverApi = {
 
   // CREATE DRIVER
   createDriver(payload) {
-    return axiosClientDrivers.post("/", payload).then((res) => {
+    return axiosClientDrivers.post("", payload).then((res) => {
       if (typeof res.data === "string" && res.data.toLowerCase().includes("exist")) {
         throw new Error(res.data);
       }
