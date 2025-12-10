@@ -18,9 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Upload, CalendarIcon } from "lucide-react";
 import useNavigator from "@/hooks/use-navigator";
 
-// ------------------------------
+
 // ZOD VALIDATION SCHEMA
-// ------------------------------
 const schema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
@@ -52,9 +51,8 @@ const schema = z.object({
   status: z.string().min(1),
 });
 
-// ------------------------------
-// MAIN COMPONENT
-// ------------------------------
+
+
 export default function CreateDriver() {
   const goTo = useNavigator();
 
@@ -79,9 +77,7 @@ export default function CreateDriver() {
     },
   });
 
-  // ------------------------------
   // SUBMIT HANDLER
-  // ------------------------------
   async function onSubmit(values) {
     try {
       await toast.promise(
@@ -89,12 +85,12 @@ export default function CreateDriver() {
           // Upload driver image
           const driverImageUrl = await uploadToSupabase(
             values.driverImage,
-            "driver-images"
+            `driver-images/${values.nicNumber}`
           );
 
           // Upload license (PDF)
           const licensePdfUrl = values.licenseFile
-            ? await uploadToSupabase(values.licenseFile, "license-files")
+            ? await uploadToSupabase(values.licenseFile, `license-files/${values.nicNumber}`)
             : null;
 
           // Build payload for backend

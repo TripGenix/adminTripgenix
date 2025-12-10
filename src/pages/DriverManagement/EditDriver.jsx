@@ -23,9 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, Upload } from "lucide-react";
 
-// -----------------------------
-// Validation Schema
-// -----------------------------
+// Validation
 const editSchema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
@@ -45,7 +43,6 @@ const editSchema = z.object({
 
   status: z.string().min(1, "Status is required"),
 
-  // Files are optional in EDIT (keep old if not provided)
   licenseFile: z.instanceof(File).nullable().optional(),
   driverImage: z.instanceof(File).nullable().optional(),
 });
@@ -78,9 +75,7 @@ export default function EditDriver() {
     },
   });
 
-  // -----------------------------
   // Load Driver
-  // -----------------------------
   useEffect(() => {
     async function loadDriver() {
       try {
@@ -93,7 +88,7 @@ export default function EditDriver() {
           firstName: d.firstName,
           lastName: d.lastName,
           nicNumber: d.nicNumber,
-          dateOfBirth: d.dateOfBirth, // assume "YYYY-MM-DD"
+          dateOfBirth: d.dateOfBirth,
           email: d.email,
           phone1: d.phone1,
           phone2: d.phone2 || "",
@@ -118,9 +113,7 @@ export default function EditDriver() {
     loadDriver();
   }, [id, form]);
 
-  // -----------------------------
   // Submit Update
-  // -----------------------------
   async function onSubmit(values) {
     if (!existingDriver) return;
 
@@ -129,12 +122,12 @@ export default function EditDriver() {
         (async () => {
           // If new driver image selected → upload, else keep old
           const newDriverImageUrl = values.driverImage
-            ? await uploadToSupabase(values.driverImage, "driver-images")
+            ? await uploadToSupabase(values.driverImage, `driver-images/${values.nicNumber}`)
             : existingDriver.driverImage;
 
           // If new license PDF selected → upload, else keep old
           const newLicensePdfUrl = values.licenseFile
-            ? await uploadToSupabase(values.licenseFile, "license-files")
+            ? await uploadToSupabase(values.licenseFile, `license-files/${values.nicNumber}`)
             : existingDriver.licensePdfUrl;
 
           const payload = {
@@ -484,7 +477,7 @@ export default function EditDriver() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => goTo("/Driver")}
+                onClick={() => goTo("/driver-management")}
               >
                 Cancel
               </Button>
