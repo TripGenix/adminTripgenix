@@ -184,7 +184,7 @@ export default function VehicleManagement() {
 
         {/* TABLE */}
         <DataTable
-          key={vehicles.length}        
+          key={vehicles.map((d) => d.vehicleId).join("-")}
           columns={vehicleColumns}
           data={vehicles}
           rowIdAccessor="vehicleId"
@@ -196,7 +196,7 @@ export default function VehicleManagement() {
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        isDeleting={isDeleting} 
+        isDeleting={isDeleting}
         title="Delete Vehicle"
         message="Are you sure you want to delete"
         itemName={

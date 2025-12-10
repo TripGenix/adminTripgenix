@@ -11,9 +11,11 @@ import Trip from "@/pages/trips";
 import AccountSettings from "@/pages/AccountSettings";
 import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
 import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
+import AddDriver from "@/pages/DriverManagement/AddDriver";
+import DriverManagement from "./pages/DriverManagement/driverManagement";
+import EditDriver from "@/pages/DriverManagement/EditDriver";
 
 import { Toaster } from "sonner";
-import DriverManagement from "./pages/DriverManagement/driverManagement";
 
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
@@ -57,8 +59,8 @@ function App() {
 
                    <Route path="driver-management">
                     <Route index element={<DriverManagement />} />
-                    <Route path="add" element={<AddVehicle />} />
-                    <Route path="edit/:id" element={<EditVehicle />} />
+                    <Route path="add" element={<AddDriver />} />
+                    <Route path="edit/:id" element={<EditDriver />} />
                   </Route>
 
                   {/* Catch All Inside Layout */}
