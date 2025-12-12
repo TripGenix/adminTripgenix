@@ -113,20 +113,20 @@ export default function AddVehicle() {
           // Upload Vehicle Images
           const uploadedVehicleImages = await Promise.all(
             values.vehicleImages.map((file) =>
-              uploadToSupabase(file, "vehicle-images")
+              uploadToSupabase(file, `vehicle-images/${values.vehicleNumber}`)
             )
           );
 
           //Upload Owner Image
           const ownerImageUrl = await uploadToSupabase(
             values.ownerImage,
-            "owner-images"
+            `owner-images/${values.vehicleNumber}`
           );
 
           // Upload Document
           const documentUrl = await uploadToSupabase(
             values.documents,
-            "vehicle-docs"
+            `vehicle-docs/${values.vehicleNumber}`
           );
 
           // Build payload

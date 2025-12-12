@@ -4,7 +4,7 @@ import supabase from "@/lib/supabaseClient";
 export default async function uploadToSupabase(file, folder) {
   if (!file) return null;
 
-  const fileName = `${folder}/${Date.now()}-${file.name}`;
+  const fileName = `${folder}/${file.name}`;
 
   const { data, error } = await supabase.storage
     .from("images")
