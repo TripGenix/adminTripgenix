@@ -7,7 +7,7 @@ import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import VehicleManagement from "@/pages/vehicleManagement/vehicleManagement";
-import Trip from "@/pages/trips";
+import Trip from "@/pages/tour-tabs/trips";
 import AccountSettings from "@/pages/AccountSettings";
 import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
 import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
@@ -47,7 +47,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="trips" element={<Trip />} />
+                  {/* <Route path="trips" element={<Trip />} /> */}
                   <Route path="settings" element={<AccountSettings />} />
 
                   {/* Vehicle Routes */}
@@ -57,12 +57,16 @@ function App() {
                     <Route path="edit/:id" element={<EditVehicle />} />
                   </Route>
 
-                   <Route path="driver-management">
+                  <Route path="driver-management">
                     <Route index element={<DriverManagement />} />
                     <Route path="add" element={<AddDriver />} />
                     <Route path="edit/:id" element={<EditDriver />} />
                   </Route>
+                  <Route path="/" element={<Navigate to="/trips/new" />} />
 
+                  {/* Trips */}
+                  <Route path="trips/*" element={<Trip />} />
+                  
                   {/* Catch All Inside Layout */}
                   <Route path="*" element={<Navigate to="/dashboard" />} />
                 </Routes>

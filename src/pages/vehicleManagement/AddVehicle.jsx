@@ -9,6 +9,8 @@ import uploadToSupabase from "@/utils/uploadImage";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import useNavigator from "@/hooks/use-navigator";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 import {
   Form,
@@ -35,7 +37,7 @@ import { CalendarIcon, Upload } from "lucide-react";
 const schema = z.object({
   vehicleName: z.string().min(1, "Vehicle name is required"),
   vehicleNumber: z.string().min(1, "Vehicle number is required"),
-  category: z.string().min(1, "Category is required"),
+  category: z.number().min(1, "Category is required"),
   passengerCount: z.string().min(1, "Passenger count is required"),
   costPerKm: z.string().min(1, "Cost per KM required"),
   bookingPrice: z.string().min(1, "Booking price required"),
@@ -102,7 +104,25 @@ export default function AddVehicle() {
   });
 
   const vehicleImages = form.watch("vehicleImages");
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await axios.get(
+          "http://localhost:8080/categoryController/api/v1"
+        );
+        const formatted = res.data.map((item) => ({
+          value: item.id,
+          label: item.Category,
+        }));
+        setCategories(formatted);
+      } catch (error) {
+        console.error("Failed to load categories", error);
+      }
+    }
 
+    loadCategories();
+  }, []);
   // SUBMIT LOGIC
   async function onSubmit(values) {
     console.log("Submitting...", values);
@@ -113,20 +133,20 @@ export default function AddVehicle() {
           // Upload Vehicle Images
           const uploadedVehicleImages = await Promise.all(
             values.vehicleImages.map((file) =>
-              uploadToSupabase(file, "vehicle-images")
+              uploadToSupabase(file, `vehicle-images/${values.vehicleNumber}`)
             )
           );
 
           //Upload Owner Image
           const ownerImageUrl = await uploadToSupabase(
             values.ownerImage,
-            "owner-images"
+            `owner-images/${values.vehicleNumber}`
           );
 
           // Upload Document
           const documentUrl = await uploadToSupabase(
             values.documents,
-            "vehicle-docs"
+            `vehicle-docs/${values.vehicleNumber}`
           );
 
           // Build payload
@@ -141,7 +161,7 @@ export default function AddVehicle() {
         })(),
 
         {
-          loading: "Processing…", 
+          loading: "Processing…",
           success: () => {
             goTo("/Vehicle");
             form.reset();
@@ -209,7 +229,25 @@ export default function AddVehicle() {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <Input placeholder="Van / Car / Bus" {...field} />
+                      <Select
+                        value={String(field.value ?? "")}
+                        onValueChange={(val) => field.onChange(Number(val))}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem
+                              key={cat.value}
+                              value={String(cat.value)}
+                            >
+                              {cat.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -321,7 +359,7 @@ export default function AddVehicle() {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>

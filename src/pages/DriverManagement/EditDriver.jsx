@@ -23,28 +23,30 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, Upload } from "lucide-react";
 
-// Validation
+import Select from "react-select";
+import axios from "axios";
+
+// ------------------ VALIDATION ------------------
 const editSchema = z.object({
   firstName: z.string().min(1, "First name required"),
   lastName: z.string().min(1, "Last name required"),
   nicNumber: z.string().min(9, "NIC number required"),
-
   dateOfBirth: z.string().min(1, "Date of birth required"),
-
   email: z.string().email("Invalid email"),
   phone1: z.string().min(1, "Primary phone required"),
-  phone2: z.string().optional(),
-
+  phone2: z.string().min(1, "Secondary phone required"),
   addressLine1: z.string().min(1, "Address line 1 required"),
   addressLine2: z.string().optional(),
   city: z.string().min(1, "City required"),
   stateProvince: z.string().min(1, "State / Province required"),
   postalCode: z.string().min(1, "Postal code required"),
-
-  status: z.string().min(1, "Status is required"),
+  status: z.string().min(1),
 
   licenseFile: z.instanceof(File).nullable().optional(),
   driverImage: z.instanceof(File).nullable().optional(),
+
+  selectedVehicleCategories: z.array(z.number()).optional(),
+  selectedVehicleByNumber: z.array(z.number()).optional(),
 });
 
 export default function EditDriver() {
@@ -53,6 +55,9 @@ export default function EditDriver() {
 
   const [loading, setLoading] = useState(true);
   const [existingDriver, setExistingDriver] = useState(null);
+
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [vehicleOptions, setVehicleOptions] = useState([]);
 
   const form = useForm({
     resolver: zodResolver(editSchema),
@@ -72,10 +77,43 @@ export default function EditDriver() {
       status: "Active",
       licenseFile: null,
       driverImage: null,
+      selectedVehicleCategories: [],
+      selectedVehicleByNumber: [],
     },
   });
 
-  // Load Driver
+  // ------------------ LOAD SUPPORTING DATA ------------------
+  useEffect(() => {
+    async function loadSupportingData() {
+      try {
+        const resCategory = await axios.get(
+          "http://localhost:8080/categoryController/api/v1"
+        );
+        setCategoryOptions(
+          resCategory.data.map((item) => ({
+            value: item.id,
+            label: item.Category,
+          }))
+        );
+
+        const resVehicles = await axios.get(
+          "http://localhost:8080/vehicleController/api/v1/getallvehicles"
+        );
+        setVehicleOptions(
+          resVehicles.data.map((item) => ({
+            value: item.vehicleId,
+            label: item.numberPlate,
+          }))
+        );
+      } catch (err) {
+        console.error("Loading category/vehicle error", err);
+      }
+    }
+
+    loadSupportingData();
+  }, []);
+
+  // ------------------ LOAD DRIVER ------------------
   useEffect(() => {
     async function loadDriver() {
       try {
@@ -91,13 +129,17 @@ export default function EditDriver() {
           dateOfBirth: d.dateOfBirth,
           email: d.email,
           phone1: d.phone1,
-          phone2: d.phone2 || "",
+          phone2: d.phone2,
           addressLine1: d.addressLine1,
-          addressLine2: d.addressLine2 || "",
+          addressLine2: d.addressLine2,
           city: d.city,
           stateProvince: d.stateProvince,
           postalCode: d.postalCode,
-          status: d.status || "Active",
+          status: d.status,
+
+          selectedVehicleCategories: d.selectedVehicleCategories || [],
+          selectedVehicleByNumber: d.selectedVehicleByNumber || [],
+
           licenseFile: null,
           driverImage: null,
         });
@@ -113,21 +155,25 @@ export default function EditDriver() {
     loadDriver();
   }, [id, form]);
 
-  // Submit Update
+  // ------------------ SUBMIT UPDATE ------------------
   async function onSubmit(values) {
     if (!existingDriver) return;
 
     try {
       await toast.promise(
         (async () => {
-          // If new driver image selected → upload, else keep old
           const newDriverImageUrl = values.driverImage
-            ? await uploadToSupabase(values.driverImage, `driver-images/${values.nicNumber}`)
+            ? await uploadToSupabase(
+                values.driverImage,
+                `driver-images/${values.nicNumber}`
+              )
             : existingDriver.driverImage;
 
-          // If new license PDF selected → upload, else keep old
           const newLicensePdfUrl = values.licenseFile
-            ? await uploadToSupabase(values.licenseFile, `license-files/${values.nicNumber}`)
+            ? await uploadToSupabase(
+                values.licenseFile,
+                `license-files/${values.nicNumber}`
+              )
             : existingDriver.licensePdfUrl;
 
           const payload = {
@@ -146,8 +192,10 @@ export default function EditDriver() {
             status: values.status,
             licensePdfUrl: newLicensePdfUrl,
             driverImage: newDriverImageUrl,
-            // keep previous approval value unless you want to reset
             isApproved: existingDriver.isApproved ?? 0,
+
+            selectedVehicleCategories: values.selectedVehicleCategories,
+            selectedVehicleByNumber: values.selectedVehicleByNumber,
           };
 
           return driverApi.updateDriver(id, payload);
@@ -156,7 +204,7 @@ export default function EditDriver() {
           loading: "Updating driver...",
           success: () => {
             goTo("/driver-management");
-            return "Driver updated successfully! 👋";
+            return "Driver updated successfully!";
           },
           error: (err) => {
             console.error(err);
@@ -172,18 +220,19 @@ export default function EditDriver() {
 
   if (loading) return <div className="p-6">Loading…</div>;
 
+  // ------------------ UI ------------------
   return (
     <div className="p-6">
-      <PageBreadcrumb title="Edit Driver" paths={["Driver Management", ""]} />
+      <PageBreadcrumb title="Edit Driver" paths={["Driver Management"]} />
 
-      <div className="bg-white border border-gray-300 rounded-md shadow-2xl p-6">
+      <div className="bg-white border rounded-md shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Driver Details</h2>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
-            {/* DRIVER BASIC DETAILS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* First Name */}
+
+              {/* FIRST NAME */}
               <FormField
                 control={form.control}
                 name="firstName"
@@ -191,14 +240,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Akila" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Last Name */}
+              {/* LAST NAME */}
               <FormField
                 control={form.control}
                 name="lastName"
@@ -206,14 +255,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Nilusha" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* NIC */}
+              {/* NIC NUMBER */}
               <FormField
                 control={form.control}
                 name="nicNumber"
@@ -221,7 +270,7 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>NIC Number</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="200302302394" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -238,7 +287,7 @@ export default function EditDriver() {
                     <FormControl>
                       <div className="relative">
                         <Input type="date" {...field} />
-                        <CalendarIcon className="h-4 w-4 absolute right-3 top-3 opacity-50" />
+                        <CalendarIcon className="absolute right-3 top-3 h-4 w-4 opacity-50" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -246,7 +295,7 @@ export default function EditDriver() {
                 )}
               />
 
-              {/* Email */}
+              {/* EMAIL */}
               <FormField
                 control={form.control}
                 name="email"
@@ -254,18 +303,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        {...field}
-                        placeholder="akila@example.com"
-                      />
+                      <Input type="email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Phone 1 */}
+              {/* PRIMARY PHONE */}
               <FormField
                 control={form.control}
                 name="phone1"
@@ -273,14 +318,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Primary Phone</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="0771234567" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Phone 2 */}
+              {/* SECONDARY PHONE */}
               <FormField
                 control={form.control}
                 name="phone2"
@@ -288,14 +333,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Secondary Phone</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="0719876543" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Address Line 1 */}
+              {/* ADDRESS LINE 1 */}
               <FormField
                 control={form.control}
                 name="addressLine1"
@@ -303,14 +348,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Address Line 1</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="No. 25, Main Street" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Address Line 2 */}
+              {/* ADDRESS LINE 2 */}
               <FormField
                 control={form.control}
                 name="addressLine2"
@@ -318,14 +363,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Address Line 2</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Tholangamuwa" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* City */}
+              {/* CITY */}
               <FormField
                 control={form.control}
                 name="city"
@@ -333,14 +378,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Kegalle" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* State / Province */}
+              {/* STATE / PROVINCE */}
               <FormField
                 control={form.control}
                 name="stateProvince"
@@ -348,14 +393,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>State / Province</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Sabaragamuwa" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Postal Code */}
+              {/* POSTAL CODE */}
               <FormField
                 control={form.control}
                 name="postalCode"
@@ -363,14 +408,14 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Postal Code</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="71000" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Status */}
+              {/* STATUS */}
               <FormField
                 control={form.control}
                 name="status"
@@ -379,25 +424,23 @@ export default function EditDriver() {
                     <FormLabel>Status</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="Active / Inactive" />
-                      {/* You can swap to <Select> if you want fixed options */}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* LICENSE (PDF) */}
+              {/* LICENSE PDF */}
               <FormField
                 control={form.control}
                 name="licenseFile"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Driver License (PDF)</FormLabel>
-
                     <FormControl>
                       <Button
-                        variant="outline"
                         type="button"
+                        variant="outline"
                         onClick={() =>
                           document.getElementById("licensePdfUpload").click()
                         }
@@ -405,7 +448,6 @@ export default function EditDriver() {
                         <Upload className="mr-2" /> Upload New License
                       </Button>
                     </FormControl>
-
                     <input
                       id="licensePdfUpload"
                       type="file"
@@ -413,8 +455,6 @@ export default function EditDriver() {
                       className="hidden"
                       onChange={(e) => field.onChange(e.target.files[0])}
                     />
-
-                    {/* Show existing license file link */}
                     {existingDriver.licensePdfUrl && (
                       <a
                         href={existingDriver.licensePdfUrl}
@@ -425,7 +465,6 @@ export default function EditDriver() {
                         View Existing License PDF
                       </a>
                     )}
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -440,8 +479,8 @@ export default function EditDriver() {
                     <FormLabel>Driver Image</FormLabel>
                     <FormControl>
                       <Button
-                        variant="outline"
                         type="button"
+                        variant="outline"
                         onClick={() =>
                           document.getElementById("driverImageUpload").click()
                         }
@@ -461,8 +500,8 @@ export default function EditDriver() {
                     {existingDriver.driverImage && (
                       <img
                         src={existingDriver.driverImage}
-                        alt="Current driver"
-                        className="w-24 h-24 rounded-full border mt-3 object-cover"
+                        alt="Driver"
+                        className="w-24 h-24 rounded-full object-cover border mt-3"
                       />
                     )}
 
@@ -472,15 +511,68 @@ export default function EditDriver() {
               />
             </div>
 
+            {/* ---------------- VEHICLE ALLOCATION ---------------- */}
+            <h2 className="text-xl font-semibold mb-4">Vehicle Allocation</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              {/* BY CATEGORY */}
+              <FormField
+                control={form.control}
+                name="selectedVehicleCategories"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Allocate Vehicle By Category</FormLabel>
+                    <FormControl>
+                      <Select
+                        isMulti
+                        options={categoryOptions}
+                        value={categoryOptions.filter((opt) =>
+                          field.value?.includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          field.onChange(selected.map((i) => i.value))
+                        }
+                        placeholder="Select categories..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* BY VEHICLE NUMBER */}
+              <FormField
+                control={form.control}
+                name="selectedVehicleByNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Allocate Vehicle By Number</FormLabel>
+                    <FormControl>
+                      <Select
+                        isMulti
+                        options={vehicleOptions}
+                        value={vehicleOptions.filter((opt) =>
+                          field.value?.includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          field.onChange(selected.map((i) => i.value))
+                        }
+                        placeholder="Select vehicles..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             {/* ACTION BUTTONS */}
             <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => goTo("/driver-management")}
-              >
+              <Button variant="outline" type="button" onClick={() => goTo("/driver-management")}>
                 Cancel
               </Button>
+
               <Button type="submit" className="bg-blue-700 text-white">
                 Update Driver
               </Button>

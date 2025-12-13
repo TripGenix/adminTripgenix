@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import axios from "axios";
 
 import vehicleApi from "@/api/vehicleApi";
 import uploadToSupabase from "@/utils/uploadImage";
@@ -40,7 +41,7 @@ import { CalendarIcon, Upload } from "lucide-react";
 const editSchema = z.object({
   vehicleName: z.string().min(1),
   vehicleNumber: z.string().min(1),
-  category: z.string().min(1),
+  category: z.number().min(1),
   passengerCount: z.string().min(1),
   costPerKm: z.string().min(1),
   bookingPrice: z.string().min(1),
@@ -67,13 +68,17 @@ export default function EditVehicle() {
 
   const [loading, setLoading] = useState(true);
   const [existingVehicle, setExistingVehicle] = useState(null);
+  const [categories, setCategories] = useState([]);
 
+  // -----------------------------
+  // FORM
+  // -----------------------------
   const form = useForm({
     resolver: zodResolver(editSchema),
     defaultValues: {
       vehicleName: "",
       vehicleNumber: "",
-      category: "",
+      category: 0,
       passengerCount: "",
       costPerKm: "",
       bookingPrice: "",
@@ -96,6 +101,30 @@ export default function EditVehicle() {
   });
 
   // -----------------------------
+  // Load Categories
+  // -----------------------------
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await axios.get(
+          "http://localhost:8080/categoryController/api/v1"
+        );
+
+        const formatted = res.data.map((item) => ({
+          value: item.id,
+          label: item.Category,
+        }));
+
+        setCategories(formatted);
+      } catch {
+        console.error("Failed to load categories");
+      }
+    }
+
+    loadCategories();
+  }, []);
+
+  // -----------------------------
   // Load Vehicle
   // -----------------------------
   useEffect(() => {
@@ -109,7 +138,7 @@ export default function EditVehicle() {
         form.reset({
           vehicleName: v.vehicleName,
           vehicleNumber: v.numberPlate,
-          category: v.type,
+          category: Number(v.type),
           passengerCount: String(v.passengerCount),
           costPerKm: String(v.costPerKm),
           bookingPrice: String(v.bookingPrice),
@@ -131,7 +160,7 @@ export default function EditVehicle() {
         });
 
         setLoading(false);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load vehicle.");
         setLoading(false);
       }
@@ -139,6 +168,15 @@ export default function EditVehicle() {
 
     loadVehicle();
   }, [id]);
+
+  // -----------------------------
+  // Auto select category
+  // -----------------------------
+  useEffect(() => {
+    if (existingVehicle && categories.length > 0) {
+      form.setValue("category", Number(existingVehicle.type));
+    }
+  }, [categories, existingVehicle]);
 
   // -----------------------------
   // Submit Update
@@ -152,22 +190,32 @@ export default function EditVehicle() {
           const newVehicleImages =
             values.vehicleImages.length > 0
               ? await Promise.all(
-                  values.vehicleImages.map((img) =>
-                    uploadToSupabase(img, "vehicle-images")
+                  values.vehicleImages.map((file) =>
+                    uploadToSupabase(
+                      file,
+                      `vehicle-images/${values.vehicleNumber}`
+                    )
                   )
                 )
               : existingVehicle.vehicleImages;
 
           const newOwnerImage = values.ownerImage
-            ? await uploadToSupabase(values.ownerImage, "owner-images")
+            ? await uploadToSupabase(
+                values.ownerImage,
+                `owner-images/${values.vehicleNumber}`
+              )
             : existingVehicle.owner.ownerImage;
 
           const newDocumentUrl = values.documents
-            ? await uploadToSupabase(values.documents, "vehicle-docs")
+            ? await uploadToSupabase(
+                values.documents,
+                `vehicle-docs/${values.vehicleNumber}`
+              )
             : existingVehicle.documentUrl;
 
           const payload = {
             ...values,
+            category: Number(values.category),
             passengerCount: Number(values.passengerCount),
             costPerKm: Number(values.costPerKm),
             bookingPrice: Number(values.bookingPrice),
@@ -178,36 +226,37 @@ export default function EditVehicle() {
 
           return vehicleApi.updateVehicle(id, payload);
         })(),
+
         {
           loading: "Updating vehicle...",
-          success: () => {
-            goTo("/vehicle");
-            return "Update successful! 👋";
-          },
+          success: "Vehicle updated successfully!",
           error: "Update failed. Try again.",
         }
       );
-    } catch (err) {
-      console.error(err);
+
+      goTo("/vehicle");
+    } catch {
       toast.error("Unexpected error occurred!");
     }
   }
 
   if (loading) return <div className="p-6">Loading…</div>;
 
+  // -----------------------------
+  // UI
+  // -----------------------------
   return (
     <div className="p-6">
-      <PageBreadcrumb title="Edit Vehicle" paths={["Vehicle Management", ""]} />
+      <PageBreadcrumb title="Edit Vehicle" paths={["Vehicle Management"]} />
 
-      <div className="bg-white border border-gray-300 rounded-md shadow-2xl p-6">
-        {/* SECTION TITLE */}
+      <div className="bg-white border rounded-md shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Vehicle Details</h2>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
-            {/* VEHICLE GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Name */}
+            {/* GRID = responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* VEHICLE NAME */}
               <FormField
                 control={form.control}
                 name="vehicleName"
@@ -222,6 +271,7 @@ export default function EditVehicle() {
                 )}
               />
 
+              {/* VEHICLE NUMBER */}
               <FormField
                 control={form.control}
                 name="vehicleNumber"
@@ -236,20 +286,37 @@ export default function EditVehicle() {
                 )}
               />
 
+              {/* CATEGORY */}
               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Car / Van / Bus" />
-                    </FormControl>
+                    <Select
+                      value={String(field.value)}
+                      onValueChange={(val) => field.onChange(Number(val))}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.value} value={String(cat.value)}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* PASSENGER COUNT */}
               <FormField
                 control={form.control}
                 name="passengerCount"
@@ -257,13 +324,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Passenger Count</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} placeholder="4" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* COST PER KM */}
               <FormField
                 control={form.control}
                 name="costPerKm"
@@ -271,13 +339,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Cost Per KM</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} placeholder="120.50" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* BOOKING PRICE */}
               <FormField
                 control={form.control}
                 name="bookingPrice"
@@ -285,31 +354,30 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Booking Price</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} placeholder="1000" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
 
-              {/* EXISTING IMAGES */}
-              <div>
-              {existingVehicle.vehicleImages?.length > 0 && (
-                <div className="col-span-1 sm:col-span-2 lg:col-span-3 ">
-                  <h3 className="font-semibold mb-2">Current Vehicle Images</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {existingVehicle.vehicleImages.map((url, i) => (
-                      <img
-                        key={i}
-                        src={url}
-                        className="w-28 h-28 rounded border object-cover"
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+            {/* EXISTING IMAGES */}
+            <div className="w-full md:w-6/12">
+              <h3 className="font-semibold mb-2">Current Vehicle Images</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {existingVehicle.vehicleImages.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    className="w-24 h-24 rounded border object-cover"
+                  />
+                ))}
+              </div>
+            </div>
 
-              {/* UPLOAD NEW IMAGES */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* ADD NEW IMAGES */}
               <FormField
                 control={form.control}
                 name="vehicleImages"
@@ -324,15 +392,13 @@ export default function EditVehicle() {
                   </FormItem>
                 )}
               />
-              </div>
 
-              {/* PDF Upload */}
-              <div>
+              {/* DOCUMENT UPLOAD */}
               <FormField
                 control={form.control}
                 name="documents"
                 render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-2 lg:col-span-3">
+                  <FormItem>
                     <FormLabel>Vehicle Document (PDF)</FormLabel>
 
                     <Button
@@ -341,6 +407,7 @@ export default function EditVehicle() {
                       onClick={() =>
                         document.getElementById("pdfUpload").click()
                       }
+                      className="w-full"
                     >
                       <Upload className="mr-2" /> Upload PDF
                     </Button>
@@ -356,8 +423,8 @@ export default function EditVehicle() {
                     {existingVehicle.documentUrl && (
                       <a
                         href={existingVehicle.documentUrl}
-                        target="_blank"
                         className="text-blue-600 underline mt-2 block"
+                        target="_blank"
                       >
                         View Current PDF
                       </a>
@@ -367,7 +434,6 @@ export default function EditVehicle() {
                   </FormItem>
                 )}
               />
-              </div>
 
               {/* STATUS */}
               <FormField
@@ -376,13 +442,13 @@ export default function EditVehicle() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+
                       <SelectContent>
                         <SelectItem value="Available">Available</SelectItem>
                         <SelectItem value="Unavailable">Unavailable</SelectItem>
@@ -399,9 +465,9 @@ export default function EditVehicle() {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-2 lg:col-span-3">
+                  <FormItem>
                     <FormLabel>Description</FormLabel>
-                    <Textarea className="h-32" {...field} />
+                    <Textarea className="h-28" {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -414,6 +480,7 @@ export default function EditVehicle() {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* OWNER NAME */}
               <FormField
                 control={form.control}
                 name="ownerName"
@@ -421,13 +488,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Owner Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Full Name" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* NIC */}
               <FormField
                 control={form.control}
                 name="ownerId"
@@ -435,27 +503,29 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>NIC / Passport</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="NIC / Passport" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* PHONE */}
               <FormField
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
+                    <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="07X-XXXXXXX" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* ADDRESS 1 */}
               <FormField
                 control={form.control}
                 name="address1"
@@ -463,13 +533,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Address Line 1</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Street / House No." />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* ADDRESS 2 */}
               <FormField
                 control={form.control}
                 name="address2"
@@ -477,13 +548,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Address Line 2</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Town / City" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* STATE */}
               <FormField
                 control={form.control}
                 name="state"
@@ -491,13 +563,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>State / Province</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Province" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* POSTAL */}
               <FormField
                 control={form.control}
                 name="postalCode"
@@ -505,13 +578,14 @@ export default function EditVehicle() {
                   <FormItem>
                     <FormLabel>Postal Code</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Postal Code" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* DOB */}
               <FormField
                 control={form.control}
                 name="dob"
@@ -521,7 +595,7 @@ export default function EditVehicle() {
                     <FormControl>
                       <div className="relative">
                         <Input type="date" {...field} />
-                        <CalendarIcon className="h-4 w-4 absolute right-3 top-3 opacity-50" />
+                        <CalendarIcon className="absolute h-4 w-4 right-3 top-3 opacity-50" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -550,8 +624,8 @@ export default function EditVehicle() {
                     <input
                       id="ownerImg"
                       type="file"
-                      accept="image/*"
                       className="hidden"
+                      accept="image/*"
                       onChange={(e) => field.onChange(e.target.files[0])}
                     />
 
@@ -568,7 +642,7 @@ export default function EditVehicle() {
               />
             </div>
 
-            {/* ACTION BUTTONS */}
+            {/* FOOTER BUTTONS */}
             <div className="flex justify-end gap-4">
               <Button
                 type="button"
