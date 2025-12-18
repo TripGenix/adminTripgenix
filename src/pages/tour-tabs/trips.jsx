@@ -22,42 +22,42 @@ export default function Trips() {
 
           <TabsTrigger
             value="new"
-            className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            className="w-full text-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
           >
             New Tours
           </TabsTrigger>
 
           <TabsTrigger
             value="passenger-confirmed"
-            className="w-full  data-[state=active]:bg-green-600 data-[state=active]:text-white"
+            className="w-full text-green-600  data-[state=active]:bg-green-600 data-[state=active]:text-white"
           >
             Passenger Confirmed
           </TabsTrigger>
 
           <TabsTrigger
             value="driver-pending"
-            className="w-full data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+            className="w-full text-yellow-500 data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
           >
             Driver Pending
           </TabsTrigger>
 
           <TabsTrigger
             value="in-progress"
-            className="w-full data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
+            className="w-full text-indigo-600 data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
           >
             In Progress
           </TabsTrigger>
 
           <TabsTrigger
             value="finished"
-            className="w-full data-[state=active]:bg-emerald-600 data-[state=active]:text-white"
+            className="w-full text-emerald-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white"
           >
             Finished Tours
           </TabsTrigger>
 
           <TabsTrigger
             value="cancelled"
-            className="w-full data-[state=active]:bg-red-600 data-[state=active]:text-white"
+            className="w-full text-red-600 data-[state=active]:bg-red-600 data-[state=active]:text-white"
           >
             Cancelled Tours
           </TabsTrigger>
