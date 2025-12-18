@@ -19,6 +19,7 @@ import {
 
 import vehicleApi from "@/api/vehicleApi";
 import useNavigator from "@/hooks/use-navigator";
+import { set } from "zod";
 
 export default function VehicleManagement() {
   const [vehicles, setVehicles] = useState([]);
@@ -32,8 +33,11 @@ export default function VehicleManagement() {
 
   // Load vehicles on mount
   useEffect(() => {
-    loadVehicles();
-  }, []);
+    if (loading) {
+      loadVehicles();
+      setLoading(false);
+    }
+  }, [loading]);
 
   async function loadVehicles() {
     try {
@@ -58,8 +62,7 @@ export default function VehicleManagement() {
 
       setSelectedVehicle(null);
       setDeleteModalOpen(false);
-
-      await loadVehicles();
+      setLoading(true);
     } finally {
       setIsDeleting(false);
     }

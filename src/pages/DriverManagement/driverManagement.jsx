@@ -19,6 +19,7 @@ import {
 
 import driverApi from "@/api/DriverApi";
 import useNavigator from "@/hooks/use-navigator";
+import { set } from "zod";
 
 export default function DriverManagement() {
   const [drivers, setDrivers] = useState([]);
@@ -30,10 +31,12 @@ export default function DriverManagement() {
 
   const goTo = useNavigator();
 
-  // Load drivers on mount
   useEffect(() => {
-    loadDrivers();
-  }, []);
+    if (loading) {
+      loadDrivers();
+      setLoading(false);
+    }
+  }, [loading]);
 
   async function loadDrivers() {
     try {
@@ -59,7 +62,7 @@ export default function DriverManagement() {
       setSelectedDriver(null);
       setDeleteModalOpen(false);
 
-      await loadDrivers();
+      setLoading(true);
     } finally {
       setIsDeleting(false);
     }
