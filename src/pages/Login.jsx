@@ -3,9 +3,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/authService";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { checkAdminExists } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const nav = useNavigate();
+  const { login: authLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -32,20 +34,26 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     if (!email || !password) {
       setError("Please enter email and password.");
       return;
     }
+
     setLoading(true);
     try {
       const res = await login(email, password);
+      console.log("Login response:", res);
+
       const { token, username, email: userEmail } = res.data;
 
       if (token) {
-        localStorage.setItem("token", token);
+        authLogin(token); // ✅ ONLY THIS
+
         localStorage.setItem("userName", username);
         localStorage.setItem("userEmail", userEmail);
-        nav("/");
+
+        nav("/dashboard"); // ✅ works now
       } else {
         setError("Login failed: invalid response from server.");
       }
