@@ -45,7 +45,7 @@ export default function Login() {
         localStorage.setItem("token", token);
         localStorage.setItem("userName", username);
         localStorage.setItem("userEmail", userEmail);
-        nav("/dashboard");
+        nav("/");
       } else {
         setError("Login failed: invalid response from server.");
       }
