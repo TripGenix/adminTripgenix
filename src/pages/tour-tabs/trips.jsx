@@ -4,6 +4,7 @@ import ConfirmedTours from "./ConfirmedTours";
 import OngoingTours from "./OngoingTours";
 import CancelledTours from "./CancelledTours";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
+import AllTours from "./AllTours";
 
 export default function Trips() {
   return (
@@ -65,6 +66,9 @@ export default function Trips() {
 
         {/* ================= TAB CONTENT ================= */}
         <div className="bg-white border rounded-md shadow-2xl md:pb-3 p-4">
+          <TabsContent value="all">
+            <AllTours />
+          </TabsContent>
           <TabsContent value="new">
             <NewTours />
           </TabsContent>

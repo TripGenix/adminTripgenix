@@ -1,37 +1,42 @@
 import React, { useState } from "react";
-import { Plus, Search, Calendar, Eye, Pencil } from "lucide-react";
+import { Search, Calendar, Eye, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function NewTours() {
+export default function AllTours() {
   const navigate = useNavigate();
 
   const [searchRef, setSearchRef] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [status, setStatus] = useState("");
 
-  // Mock data (replace with API later)
+  // Mock data (replace with API)
   const tours = [
     {
       id: "TR-10021",
       customer: "John Smith",
-      startLocation: "Colombo",
-      endLocation: "Kandy",
+      route: "Colombo → Kandy",
       date: "2025-01-15",
       status: "New",
     },
     {
       id: "TR-10022",
       customer: "Emma Watson",
-      startLocation: "Negombo",
-      endLocation: "Ella",
+      route: "Negombo → Ella",
       date: "2025-01-18",
-      status: "New",
+      status: "Ongoing",
+    },
+    {
+      id: "TR-10023",
+      customer: "David Miller",
+      route: "Galle → Mirissa",
+      date: "2025-01-10",
+      status: "Completed",
     },
   ];
 
   const [filteredTours, setFilteredTours] = useState(tours);
 
-  // SEARCH HANDLER
   const handleSearch = () => {
     const results = tours.filter((tour) => {
       const matchesRef = tour.id
@@ -46,37 +51,39 @@ export default function NewTours() {
         ? new Date(tour.date) <= new Date(endDate)
         : true;
 
-      return matchesRef && matchesStartDate && matchesEndDate;
+      const matchesStatus = status ? tour.status === status : true;
+
+      return matchesRef && matchesStartDate && matchesEndDate && matchesStatus;
     });
 
     setFilteredTours(results);
   };
 
-  // CLEAR FILTERS
   const clearFilters = () => {
     setSearchRef("");
     setStartDate("");
     setEndDate("");
+    setStatus("");
     setFilteredTours(tours);
+  };
+
+  const statusBadge = (status) => {
+    const styles = {
+      New: "bg-blue-100 text-blue-700",
+      Ongoing: "bg-yellow-100 text-yellow-700",
+      Completed: "bg-green-100 text-green-700",
+      Cancelled: "bg-red-100 text-red-700",
+    };
+    return styles[status];
   };
 
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-2xl font-semibold text-gray-900">New Tours</h2>
-
-        <button
-          onClick={() => navigate("/tours/new")}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow"
-        >
-          <Plus size={18} />
-          Add New Tour
-        </button>
-      </div>
+      <h2 className="text-2xl font-semibold text-gray-900">All Tours</h2>
 
       {/* FILTERS */}
-      <div className="bg-white p-5 rounded-xl shadow-sm border grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="bg-white p-5 rounded-xl shadow-sm border grid grid-cols-1 md:grid-cols-6 gap-4">
         {/* Reference ID */}
         <div className="relative">
           <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
@@ -85,45 +92,51 @@ export default function NewTours() {
             placeholder="Search by Reference ID"
             value={searchRef}
             onChange={(e) => setSearchRef(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-salt-500 outline-none"
           />
         </div>
 
         {/* Start Date */}
-        <div className="relative">
-          <Calendar className="absolute left-3 top-3.5 text-gray-400" size={18} />
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-        </div>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-salt-500 outline-none"
+        />
 
         {/* End Date */}
-        <div className="relative">
-          <Calendar className="absolute left-3 top-3.5 text-gray-400" size={18} />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-        </div>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-salt-500 outline-none"
+        />
 
-        {/* SEARCH BUTTON */}
+        {/* Status */}
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-salt-500 outline-none"
+        >
+          <option value="">All Status</option>
+          <option value="New">New</option>
+          <option value="Ongoing">Ongoing</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+
+        {/* SEARCH */}
         <button
           onClick={handleSearch}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2"
+          className="bg-slate-800 hover:bg-slate-600 text-white rounded-lg"
         >
-          <Search size={18} />
           Search
         </button>
 
         {/* CLEAR */}
         <button
           onClick={clearFilters}
-          className="border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
+          className="border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100"
         >
           Clear
         </button>
@@ -152,17 +165,22 @@ export default function NewTours() {
               </tr>
             ) : (
               filteredTours.map((tour) => (
-                <tr key={tour.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-blue-600">
+                <tr
+                  key={tour.id}
+                  className="border-t hover:bg-gray-50"
+                >
+                  <td className="px-4 py-3 font-medium text-salt-600">
                     {tour.id}
                   </td>
                   <td className="px-4 py-3">{tour.customer}</td>
-                  <td className="px-4 py-3">
-                    {tour.startLocation} → {tour.endLocation}
-                  </td>
+                  <td className="px-4 py-3">{tour.route}</td>
                   <td className="px-4 py-3">{tour.date}</td>
                   <td className="px-4 py-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${statusBadge(
+                        tour.status
+                      )}`}
+                    >
                       {tour.status}
                     </span>
                   </td>
@@ -170,13 +188,15 @@ export default function NewTours() {
                     <div className="flex justify-center gap-3">
                       <button
                         onClick={() => navigate(`/tours/view/${tour.id}`)}
-                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        title="View"
                       >
                         <Eye size={16} />
                       </button>
                       <button
                         onClick={() => navigate(`/tours/edit/${tour.id}`)}
                         className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
+                        title="Edit"
                       >
                         <Pencil size={16} />
                       </button>
