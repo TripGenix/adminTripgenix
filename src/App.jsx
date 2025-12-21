@@ -14,11 +14,13 @@ import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
 import AddDriver from "@/pages/DriverManagement/AddDriver";
 import DriverManagement from "@/pages/DriverManagement/driverManagement";
 import EditDriver from "@/pages/DriverManagement/EditDriver";
+import AdminPackagesPage from "@/pages/DefaultPackages/AdminPackagesPage";
+import PackageForm from "./pages/DefaultPackages/PackageForm";
 
 import { Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
-// 🔐 Protected Route
+//  Protected Route
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -145,12 +147,47 @@ function App() {
           }
         />
 
-        {/* ========== FALLBACK ========== */}
+        {/* ------FALLBACK --------*/}
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
         />
+
+        <Route 
+          path="/packages" 
+          element={ 
+            <ProtectedRoute>
+              <Layout>
+                <AdminPackagesPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+           />
+           
+          <Route 
+          path="/packages/add"           
+          element={ 
+            <ProtectedRoute>
+              <Layout>
+                <PackageForm />
+              </Layout>
+            </ProtectedRoute>
+          }
+           />
+
+        <Route 
+          path="/packages/edit/:id"
+          element={ 
+            <ProtectedRoute>
+              <Layout>
+                <PackageForm />
+              </Layout>
+            </ProtectedRoute>
+          }
+           />
+
       </Routes>
+
     </BrowserRouter>
   );
 }
