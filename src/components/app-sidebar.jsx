@@ -58,6 +58,11 @@ const data = {
       url: "/driver-management",
       icon: Users,
     },
+    {
+      title:"Packages",
+      url:"/packages",
+      icon:ClipboardListIcon,
+    }
     
     
   ],
