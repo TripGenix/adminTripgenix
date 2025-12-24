@@ -44,7 +44,7 @@ const data = {
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Trips",
+      title: "Tours",
       url: "/Trips",
       icon: BiTrip,
     },

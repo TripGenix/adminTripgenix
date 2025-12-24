@@ -1,7 +1,15 @@
-import React, { useState } from "react";
-import { Plus, Search, Calendar, Eye, Pencil } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  Plus,
+  Search,
+  Calendar,
+  Eye,
+  Pencil,
+  MailCheck,
+  Send,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import bookingApi from "../../api/ToursApi";
 export default function NewTours() {
   const navigate = useNavigate();
 
@@ -9,42 +17,39 @@ export default function NewTours() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Mock data (replace with API later)
-  const tours = [
-    {
-      id: "TR-10021",
-      customer: "John Smith",
-      startLocation: "Colombo",
-      endLocation: "Kandy",
-      date: "2025-01-15",
-      status: "New",
-    },
-    {
-      id: "TR-10022",
-      customer: "Emma Watson",
-      startLocation: "Negombo",
-      endLocation: "Ella",
-      date: "2025-01-18",
-      status: "New",
-    },
-  ];
+  const [tours, setTours] = useState([]);
+  const [filteredTours, setFilteredTours] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [filteredTours, setFilteredTours] = useState(tours);
+  // 🔹 LOAD DATA
+  useEffect(() => {
+    setLoading(true);
+    bookingApi
+      .getNewTours()
+      .then((res) => {
+        setTours(res.data);
+        setFilteredTours(res.data);
+      })
+      .catch((err) => {
+        console.error("Failed to load tours", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  // SEARCH HANDLER
+  // 🔹 SEARCH HANDLER
   const handleSearch = () => {
     const results = tours.filter((tour) => {
-      const matchesRef = tour.id
-        .toLowerCase()
-        .includes(searchRef.toLowerCase());
+      const matchesRef = searchRef
+        ? tour.referenceId?.toLowerCase().includes(searchRef.toLowerCase())
+        : true;
+
+      const tourDate = tour.startDate ? new Date(tour.startDate) : null;
 
       const matchesStartDate = startDate
-        ? new Date(tour.date) >= new Date(startDate)
+        ? tourDate >= new Date(startDate)
         : true;
 
-      const matchesEndDate = endDate
-        ? new Date(tour.date) <= new Date(endDate)
-        : true;
+      const matchesEndDate = endDate ? tourDate <= new Date(endDate) : true;
 
       return matchesRef && matchesStartDate && matchesEndDate;
     });
@@ -52,7 +57,7 @@ export default function NewTours() {
     setFilteredTours(results);
   };
 
-  // CLEAR FILTERS
+  // 🔹 CLEAR FILTERS
   const clearFilters = () => {
     setSearchRef("");
     setStartDate("");
@@ -77,7 +82,6 @@ export default function NewTours() {
 
       {/* FILTERS */}
       <div className="bg-white p-5 rounded-xl shadow-sm border grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* Reference ID */}
         <div className="relative">
           <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
           <input
@@ -85,33 +89,36 @@ export default function NewTours() {
             placeholder="Search by Reference ID"
             value={searchRef}
             onChange={(e) => setSearchRef(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2.5 border rounded-lg"
           />
         </div>
 
-        {/* Start Date */}
         <div className="relative">
-          <Calendar className="absolute left-3 top-3.5 text-gray-400" size={18} />
+          <Calendar
+            className="absolute left-3 top-3.5 text-gray-400"
+            size={18}
+          />
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2.5 border rounded-lg"
           />
         </div>
 
-        {/* End Date */}
         <div className="relative">
-          <Calendar className="absolute left-3 top-3.5 text-gray-400" size={18} />
+          <Calendar
+            className="absolute left-3 top-3.5 text-gray-400"
+            size={18}
+          />
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2.5 border rounded-lg"
           />
         </div>
 
-        {/* SEARCH BUTTON */}
         <button
           onClick={handleSearch}
           className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2"
@@ -120,7 +127,6 @@ export default function NewTours() {
           Search
         </button>
 
-        {/* CLEAR */}
         <button
           onClick={clearFilters}
           className="border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
@@ -139,12 +145,19 @@ export default function NewTours() {
               <th className="px-4 py-3 text-left">Route</th>
               <th className="px-4 py-3 text-left">Date</th>
               <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-center">Is send Mail</th>
               <th className="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {filteredTours.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="text-center py-8">
+                  Loading...
+                </td>
+              </tr>
+            ) : filteredTours.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center py-8 text-gray-500">
                   No tours found
@@ -152,30 +165,52 @@ export default function NewTours() {
               </tr>
             ) : (
               filteredTours.map((tour) => (
-                <tr key={tour.id} className="border-t hover:bg-gray-50">
+                <tr key={tour.bookingId} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-blue-600">
-                    {tour.id}
+                    {tour.referenceId}
                   </td>
-                  <td className="px-4 py-3">{tour.customer}</td>
+                  <td className="px-4 py-3">{tour.bookerName}</td>
+                  <td className="px-4 py-3">{tour.route?.join(" → ")}</td>
                   <td className="px-4 py-3">
-                    {tour.startLocation} → {tour.endLocation}
+                    {tour.startDate?.substring(0, 10)}
                   </td>
-                  <td className="px-4 py-3">{tour.date}</td>
                   <td className="px-4 py-3">
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                       {tour.status}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-center ">
+                    {tour.sendConfirmEmail ? (
+                      <button
+                        className="p-2 rounded-lg  bg-green-100 hover:bg-green-200 text-green-700"
+                      >
+                        <MailCheck size={16} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          navigate(`/tours/edit/${tour.bookingId}`)
+                        }
+                        className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
+                      >
+                        <Send size={16} />
+                      </button>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center gap-3">
                       <button
-                        onClick={() => navigate(`/tours/view/${tour.id}`)}
+                        onClick={() =>
+                          navigate(`/tours/view/${tour.bookingId}`)
+                        }
                         className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
                       >
                         <Eye size={16} />
                       </button>
                       <button
-                        onClick={() => navigate(`/tours/edit/${tour.id}`)}
+                        onClick={() =>
+                          navigate(`/tours/edit/${tour.bookingId}`)
+                        }
                         className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
                       >
                         <Pencil size={16} />
