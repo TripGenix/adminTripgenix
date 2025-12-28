@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8082/api/auth';
-const API_PROTECTED_URL = 'http://localhost:8082/api';
-const API_STATUS_URL = 'http://localhost:8082/api'; 
+const API_BASE_URL = 'http://localhost:8086/api/auth';
+const API_PROTECTED_URL = 'http://localhost:8086/api';
+const API_STATUS_URL = 'http://localhost:8086/api'; 
 
 
 

@@ -1,4 +1,4 @@
-import { useNavigate ,Link} from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthUser } from "@/hooks/use-auth-user";
 
 import {
@@ -26,22 +26,27 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+import { useAuth } from "@/context/AuthContext";
+
 export function NavUser() {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
-  const user=useAuthUser();
+  const user = useAuthUser();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); 
-    navigate("/login");              
+    logout(); 
+    navigate("/login", { replace: true }); 
   };
 
-  if (!user || user.name === 'Guest') {
-      return (
-          <div className="p-2 flex items-center justify-center text-gray-500">
-              <Link to="/login" className="text-sm font-medium hover:text-indigo-600">Sign In</Link>
-          </div>
-      );
+  if (!user || user.name === "Guest") {
+    return (
+      <div className="p-2 flex items-center justify-center text-gray-500">
+        <Link to="/login" className="text-sm font-medium hover:text-indigo-600">
+          Sign In
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -53,8 +58,6 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-            
-
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
@@ -74,7 +77,7 @@ export function NavUser() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">
                     {user.email}
@@ -88,9 +91,7 @@ export function NavUser() {
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <UserCircleIcon />
-                <Link to="/settings">
-                Account
-                </Link>
+                <Link to="/settings">Account</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCardIcon />
@@ -109,7 +110,6 @@ export function NavUser() {
               <LogOutIcon />
               Log out
             </DropdownMenuItem>
-
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
