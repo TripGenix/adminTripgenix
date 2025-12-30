@@ -5,6 +5,7 @@ import packageApi from "@/api/PackageApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import uploadImage from "@/utils/uploadImage";
 
 export default function PackageForm() {
   const { id } = useParams();
@@ -16,11 +17,12 @@ const emptyForm = {
   totalPrice:0,
   passengers: 1,
   duration: "",
-  vehicle: "ECONOMY",
-  guide: "",
+  vehicle: "Economy Car",
+  guide: "Standard Guide",
   destinations: [""],
   hotels: [""],
   features: "",
+  imageUrl: "",
   popular: false,
 };
 
@@ -35,6 +37,9 @@ const [form, setForm] = useState(emptyForm);
 const [loading, setLoading] = useState(false);
 const [saving, setSaving] = useState(false);
 const [errors, setErrors] = useState({});
+const [imageFile, setImageFile] = useState(null);
+const [imagePreview, setImagePreview] = useState("");
+
 
 const pricePerPerson = Number(form.price || 0);
 const passengers = Number(form.passengers || 1);
@@ -44,6 +49,7 @@ const totalPrice =
     ? pricePerPerson
     : pricePerPerson * passengers * 0.75;
 
+    
 
 useEffect(() => {
   if (id) {
@@ -57,11 +63,12 @@ useEffect(() => {
             price: p.price || "",
             totalPrice: p.totalPrice || 0,
             duration: p.duration || "",
-            vehicle: p.vehicle || "ECONOMY",
+            vehicle: p.vehicle || "",
             guide: p.guide || "",
             features: p.features?.join(", ") || "",
             popular: p.popular || false,
             passengers: p.passengers || 1,
+            imageUrl: p.imageUrl || "",
             destinations: p.destinations?.length ? p.destinations : [""],
             hotels: p.hotels?.length ? p.hotels : [""],
           });
@@ -72,6 +79,8 @@ useEffect(() => {
       setForm(emptyForm);
     }
   }, [id]);
+
+  
 
   const validate = () => {
       const e = {};
@@ -90,6 +99,7 @@ useEffect(() => {
         e.destinations = "At least one destination required";
       if (!form.hotels.filter(h => h.trim()).length)
         e.hotels = "At least one hotel required";
+      if(!form.imageUrl && !imageFile)e.imageUrl="Package image is required";
 
       setErrors(e);
       return Object.keys(e).length === 0;
@@ -108,60 +118,69 @@ useEffect(() => {
     const list = form[key].filter((_, i) => i !== index);
     setForm({ ...form, [key]: list });
   };
+  
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) {
-        Object.values(errors).forEach((msg) => {
-      toast.error(msg)});
-      return;
-    }
-
-    setSaving(true);
-
-  const payload = {
-    name: form.name.trim(),
-    price: Number(form.price),        
-    passengers: Number(form.passengers),      
-    duration: form.duration.trim(),
-    vehicle: form.vehicle,             
-    guide: form.guide,               
-    destinations: form.destinations.filter(d => d.trim()),
-    hotels: form.hotels.filter(h => h.trim()),             
-    features: form.features
-      ? form.features.split(",").map(f => f.trim())
-      : [],
-    popular: form.popular || false
-  };
+  const handleImageUpload = async () => {
+  if (!imageFile) return form.imageUrl || "";
+  const url = await uploadImage(imageFile);
+  return url;
+};
 
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!validate()) {
+    Object.values(errors).forEach((msg) => toast.error(msg));
+    return;
+  }
+
+  setSaving(true);
 
   try {
-      if (id) {
-        await packageApi.updatePackage(id, payload);
-        toast.success("Package updated successfully");
-        nav("/packages");
-      } else {
-        const res = await packageApi.createPackage(payload);
-        const saved = res.data;
-        setForm(prev => ({ ...prev, totalPrice: saved.totalPrice }));
+    
+    const imageUrl = await handleImageUpload();
 
-        toast.success("Package added successfully.");
-        setForm(emptyForm);
-      }
+    const payload = {
+      name: form.name.trim(),
+      price: Number(form.price),
+      passengers: Number(form.passengers),
+      duration: form.duration.trim(),
+      vehicle: form.vehicle,
+      guide: form.guide,
+      destinations: form.destinations.filter(d => d.trim()),
+      hotels: form.hotels.filter(h => h.trim()),
+      features: form.features
+        ? form.features.split(",").map(f => f.trim())
+        : [],
+      imageUrl: imageUrl || "",
+      popular: form.popular || false,
+    };
 
-  } catch(err){
-      console.error("Full backend error:", err.response?.data || err);
-      const errorMessage = 
-        err.response?.data?.message || 
-        JSON.stringify(err.response?.data) || 
-        err.message || 
-        "Save failed";
-      toast.error(errorMessage);
+    if (id) {
+      await packageApi.updatePackage(id, payload);
+      toast.success("Package updated successfully");
+      nav("/packages");
+    } else {
+      const res = await packageApi.createPackage(payload);
+      const saved = res.data;
+      setForm(prev => ({ ...prev, totalPrice: saved.totalPrice }));
+      toast.success("Package added successfully.");
+      setForm(emptyForm);
+    }
+  } catch (err) {
+    console.error("Full backend error:", err.response?.data || err);
+    const errorMessage =
+      err.response?.data?.message ||
+      JSON.stringify(err.response?.data) ||
+      err.message ||
+      "Save failed";
+    toast.error(errorMessage);
   } finally {
     setSaving(false);
   }
 };
+
 
   if (loading) {
     return (
@@ -170,6 +189,8 @@ useEffect(() => {
       </div>
     );
   }
+
+
 
   return (   
     <div className="p-6">
@@ -224,7 +245,7 @@ useEffect(() => {
           <Field label={<span className="text-gray-900">Duration</span>} error={errors.duration}>
             <input 
               className="input"
-              placeholder="Enter duration (e.g 5 days)"
+              placeholder="Enter duration (e.g 5 Days/ 4 Nights)"
               value={form.duration} 
               onChange={(e) => setForm({ ...form, duration: e.target.value })} 
               /> 
@@ -261,6 +282,7 @@ useEffect(() => {
             </Field>
           </div>
 
+       
        
             <Field label={<span className="text-gray-900">Destinations</span>} error={errors.destinations}>
               {form.destinations.map((d, i) => (
@@ -305,6 +327,34 @@ useEffect(() => {
           </Field>
 
           
+         <Field label={<span className="text-gray-900">Package Image</span>}error={errors.imageUrl}>
+          <input
+            type="file"
+            className="input"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+
+              setImageFile(file);
+              setImagePreview(URL.createObjectURL(file)); // 👈 preview
+  }}
+          />
+          </Field>
+
+          {(imagePreview || form.imageUrl) && (
+            <div className="mt-3 relative w-64">
+              <img
+                src={imagePreview || form.imageUrl}
+                alt="Package preview"
+                className="w-50 h-40 object-cover rounded-lg border"
+              />
+
+            </div>
+          )}
+
+
+
           <Field label={<span className="text-gray-900">Description</span>}>
             <textarea
               rows="2"
@@ -314,7 +364,6 @@ useEffect(() => {
               onChange={(e) => setForm({ ...form, features: e.target.value })}
             />
           </Field>
-
 
           <Field>
             <div className="flex items-center gap-2">

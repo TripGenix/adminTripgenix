@@ -30,7 +30,7 @@ export const useAuthUser = () => {
         email: email
       });
     } else {
-      setUser(defaultUser);
+     setUser(defaultUser);
     }
   }, []); 
 
