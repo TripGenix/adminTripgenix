@@ -5,14 +5,14 @@ const bookingApi = {
     return axiosClientTours.get("/get_new_bookings");
   },
 
-    // Get all  tours
+  // Get all  tours
   getAllTours() {
     return axiosClientTours.get("/get_all_bookings");
   },
 
   //Get booking by ID
   getBookingById(id) {
-    return axiosClientTours.get(`/get_booking/${id}`);
+    return axiosClientTours.get(`/get_booking_by_id/${id}`);
   },
 
   // Create new booking
@@ -31,8 +31,8 @@ const bookingApi = {
   },
 
   // Tourist confirm
-  touristConfirm(id) {
-    return axiosClientTours.put(`/tourist/confirm/${id}`);
+  sendConfirmEmail(payload) {
+    return axiosClientTours.post("/send_confirm_booking_email", payload);
   },
 
   // Tourist cancel

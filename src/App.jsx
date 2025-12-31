@@ -7,7 +7,7 @@ import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import VehicleManagement from "@/pages/vehicleManagement/vehicleManagement";
-import Trip from "@/pages/tour-tabs/trips";
+import Trip from "@/pages/tour-tabs/Trip";
 import AccountSettings from "@/pages/AccountSettings";
 import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
 import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
@@ -62,6 +62,8 @@ function App() {
                     <Route path="add" element={<AddDriver />} />
                     <Route path="edit/:id" element={<EditDriver />} />
                   </Route>
+
+                  
                   <Route path="/" element={<Navigate to="/trips/new" />} />
 
                   {/* Trips */}

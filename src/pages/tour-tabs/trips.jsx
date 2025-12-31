@@ -8,6 +8,7 @@ import AllTours from "./AllTours";
 
 export default function Trips() {
   return (
+    
     <div className="p-1">
       <PageBreadcrumb title="Tours" />
 

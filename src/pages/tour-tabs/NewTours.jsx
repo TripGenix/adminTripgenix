@@ -8,21 +8,33 @@ import {
   MailCheck,
   Send,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import bookingApi from "../../api/ToursApi";
+
 export default function NewTours() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [searchRef, setSearchRef] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
   const [tours, setTours] = useState([]);
   const [filteredTours, setFilteredTours] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // 🔹 LOAD DATA
   useEffect(() => {
+    loadTours();
+  }, []);
+
+  useEffect(() => {
+    if (location.state?.reload) {
+      loadTours();
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state]);
+
+  const loadTours = () => {
     setLoading(true);
     bookingApi
       .getNewTours()
@@ -34,9 +46,9 @@ export default function NewTours() {
         console.error("Failed to load tours", err);
       })
       .finally(() => setLoading(false));
-  }, []);
+  };
 
-  // 🔹 SEARCH HANDLER
+  // SEARCH HANDLER
   const handleSearch = () => {
     const results = tours.filter((tour) => {
       const matchesRef = searchRef
@@ -181,15 +193,13 @@ export default function NewTours() {
                   </td>
                   <td className="px-4 py-3 text-center ">
                     {tour.sendConfirmEmail ? (
-                      <button
-                        className="p-2 rounded-lg  bg-green-100 hover:bg-green-200 text-green-700"
-                      >
+                      <button className="p-2 rounded-lg  bg-green-100 hover:bg-green-200 text-green-700">
                         <MailCheck size={16} />
                       </button>
                     ) : (
                       <button
                         onClick={() =>
-                          navigate(`/tours/edit/${tour.bookingId}`)
+                          navigate(`/trips/send-email-view/${tour.bookingId}`)
                         }
                         className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
                       >
