@@ -6,188 +6,96 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+
 import VehicleManagement from "@/pages/vehicleManagement/vehicleManagement";
-import Trip from "@/pages/tour-tabs/trips";
-import AccountSettings from "@/pages/AccountSettings";
 import AddVehicle from "@/pages/vehicleManagement/AddVehicle";
 import EditVehicle from "@/pages/vehicleManagement/EditVehicle";
-import AddDriver from "@/pages/DriverManagement/AddDriver";
+
 import DriverManagement from "@/pages/DriverManagement/driverManagement";
+import AddDriver from "@/pages/DriverManagement/AddDriver";
 import EditDriver from "@/pages/DriverManagement/EditDriver";
+
+import Trip from "@/pages/tour-tabs/Trip";
+import AccountSettings from "@/pages/AccountSettings";
+
 import AdminPackagesPage from "@/pages/DefaultPackages/AdminPackagesPage";
-import PackageForm from "./pages/DefaultPackages/PackageForm";
+import PackageForm from "@/pages/DefaultPackages/PackageForm";
 
 import { Toaster } from "sonner";
-import { useAuth } from "@/context/AuthContext";
-
-//  Protected Route
-function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return children;
-}
 
 function App() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = !!localStorage.getItem("token");
+
+  const ProtectedRoute = ({ children }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+    return children;
+  };
 
   return (
     <BrowserRouter>
       <Toaster position="top-right" richColors closeButton />
 
       <Routes>
-        {/* ========== PUBLIC ROUTES ========== */}
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
-        />
+        <Route path="/login" element={<Login />} />
         <Route path="/add-admin" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* ========== PROTECTED ROUTES ========== */}
         <Route
-          path="/dashboard"
+          path="/*"
           element={
             <ProtectedRoute>
               <Layout>
-                <Dashboard />
+                <Routes>
+                  {/* Dashboard */}
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+
+                  {/* Settings */}
+                  <Route path="settings" element={<AccountSettings />} />
+
+                  {/* Vehicle Routes */}
+                  <Route path="vehicle">
+                    <Route index element={<VehicleManagement />} />
+                    <Route path="add" element={<AddVehicle />} />
+                    <Route path="edit/:id" element={<EditVehicle />} />
+                  </Route>
+
+                  {/* Driver Routes */}
+                  <Route path="driver-management">
+                    <Route index element={<DriverManagement />} />
+                    <Route path="add" element={<AddDriver />} />
+                    <Route path="edit/:id" element={<EditDriver />} />
+                  </Route>
+
+                  {/* Package Routes */}
+                  <Route path="packages">
+                    <Route index element={<AdminPackagesPage />} />
+                    <Route path="add" element={<PackageForm />} />
+                    <Route path="edit/:id" element={<PackageForm />} />
+                  </Route>
+
+                  {/* Trips */}
+                  <Route path="trips/*" element={<Trip />} />
+
+                  {/* Default Redirect */}
+                  <Route path="/" element={<Navigate to="/trips/new" />} />
+
+                  {/* Catch-all inside layout */}
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                </Routes>
               </Layout>
             </ProtectedRoute>
           }
         />
 
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <AccountSettings />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Vehicle */}
-        <Route
-          path="/vehicle"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <VehicleManagement />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/vehicle/add"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <AddVehicle />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/vehicle/edit/:id"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <EditVehicle />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Driver */}
-        <Route
-          path="/driver-management"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <DriverManagement />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/driver-management/add"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <AddDriver />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/driver-management/edit/:id"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <EditDriver />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Trips */}
-        <Route
-          path="/trips/*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Trip />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ------FALLBACK --------*/}
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
         />
-
-        <Route 
-          path="/packages" 
-          element={ 
-            <ProtectedRoute>
-              <Layout>
-                <AdminPackagesPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-           />
-           
-          <Route 
-          path="/packages/add"           
-          element={ 
-            <ProtectedRoute>
-              <Layout>
-                <PackageForm />
-              </Layout>
-            </ProtectedRoute>
-          }
-           />
-
-        <Route 
-          path="/packages/edit/:id"
-          element={ 
-            <ProtectedRoute>
-              <Layout>
-                <PackageForm />
-              </Layout>
-            </ProtectedRoute>
-          }
-           />
-
       </Routes>
-
     </BrowserRouter>
   );
 }
