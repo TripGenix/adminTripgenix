@@ -25,6 +25,7 @@ import { CalendarIcon, Upload } from "lucide-react";
 
 import Select from "react-select";
 import axios from "axios";
+import vehicleApi from "@/api/vehicleApi";
 
 // ------------------ VALIDATION ------------------
 const editSchema = z.object({
@@ -86,9 +87,7 @@ export default function EditDriver() {
   useEffect(() => {
     async function loadSupportingData() {
       try {
-        const resCategory = await axios.get(
-          "http://localhost:8080/categoryController/api/v1"
-        );
+        const resCategory = await vehicleApi.getVehicleCategories();
         setCategoryOptions(
           resCategory.data.map((item) => ({
             value: item.id,
@@ -96,9 +95,7 @@ export default function EditDriver() {
           }))
         );
 
-        const resVehicles = await axios.get(
-          "http://localhost:8080/vehicleController/api/v1/getallvehicles"
-        );
+        const resVehicles = await vehicleApi.getVehicleNumbers();
         setVehicleOptions(
           resVehicles.data.map((item) => ({
             value: item.vehicleId,
