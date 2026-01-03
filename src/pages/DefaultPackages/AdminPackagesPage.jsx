@@ -1,175 +1,221 @@
-import { useState,useEffect } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
-import useNavigator from "@/hooks/use-navigator";
-import packageApi from "@/api/PackageApi";
-import PackageForm from "./PackageForm";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { DataTable } from "@/components/data-table";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 
-const initialPackages = [
-  {
-    id: 1,
-    name: "Bronze Package",
-    totalPrice: 599,
-    passengers:1,
-    duration: "5 Days",
-    destinations: ["Colombo", "Galle", "Kandy", "Sigiriya", "Negombo"],
-    vehicle: "Economy Car",
-    guide: "Standard Guide",
-    features: [
-      "5 Popular Destinations",
-      "Economy Vehicle",
-      "Standard Tour Guide",
-      "Hotel Recommendations",
-      "Basic Itinerary Planning",
-    ],
-    hotels:[
-      "Hotel A",
-      "Hotel B",
-    ]
-  },
-  
-];
+import { Button } from "@/components/ui/button";
+import { Plus, Download, MoreVerticalIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DragHandle } from "@/components/data-table";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
+import { toast } from "sonner";
 
-export default function AdminPackagesPage() {
-  const [packages, setPackages] = useState(initialPackages);
-  const [editing, setEditing] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const nav=useNavigator();
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
 
-  const loadPackages = async () => {
-    try {
-      const res = await packageApi.getAllPackages();
-      setPackages(res.data);
-    } catch (err) {
-      console.error("Failed to load packages", err);
-      toast.error("Failed to load packages");
-    }
-  };
+import packageApi from "@/api/PackageApi";
+import useNavigator from "@/hooks/use-navigator";
+
+export default function PackageManagement() {
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const goTo = useNavigator();
 
   useEffect(() => {
-    loadPackages();
-  }, []);
+    if (loading) {
+      loadPackages();
+      setLoading(false);
+    }
+  }, [loading]);
 
-    // Delete packages
-    const handleDelete = (id) => {
-    const toastId= toast(
-        <div>
-          Are you sure you want to delete this package?
-          <div className="mt-2 flex gap-2 justify-end">
-            <button
-              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-              onClick={async () => {
-                try {
-                  await packageApi.deletePackage(id);
-                  await loadPackages();
-                  toast.dismiss(toastId);
-                  toast.success("Package deleted successfully");
-                } catch (err) {
-                  console.error(err);
-                  toast.error("Failed to delete package");
-                }
+  async function loadPackages() {
+    try {
+      const response = await packageApi.getAllPackages();
+      setPackages(response.data);
+    } catch (error) {
+      console.error("Failed to load packages", error);
+      toast.error("Failed to load packages");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDeleteConfirm() {
+    setIsDeleting(true);
+
+    try {
+      await toast.promise(packageApi.deletePackage(selectedPackage.id), {
+        loading: "Deleting package...",
+        success: "Package deleted successfully!",
+        error: "Failed to delete package",
+      });
+
+      setSelectedPackage(null);
+      setDeleteModalOpen(false);
+      setLoading(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  // ================= TABLE COLUMNS =================
+  const packageColumns = [
+    {
+      id: "drag",
+      header: () => null,
+      cell: ({ row }) => <DragHandle id={row.original.id.toString()} />,
+    },
+
+    // SELECT CHECKBOX
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(val) => table.toggleAllPageRowsSelected(!!val)}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(val) => row.toggleSelected(!!val)}
+        />
+      ),
+    },
+
+    // PACKAGE NAME
+    { accessorKey: "name", header: "Package Name" },
+
+    // PRICE
+    {
+      accessorKey: "totalPrice",
+      header: "Price ($)",
+      cell: ({ row }) => `$${row.original.totalPrice}`,
+    },
+
+    // PASSENGERS
+    {
+      accessorKey: "passengers",
+      header: "Passengers",
+    },
+
+    // DURATION
+    {
+      accessorKey: "duration",
+      header: "Duration",
+    },
+
+    // VEHICLE
+    {
+      accessorKey: "vehicle",
+      header: "Vehicle",
+    },
+
+    // GUIDE
+    {
+      accessorKey: "guide",
+      header: "Guide",
+    },
+
+    // ACTIONS
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreVerticalIcon />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => goTo(`/packages/edit/${row.original.id}`)}
+            >
+              Edit
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              onClick={() => {
+                setSelectedPackage(row.original);
+                setDeleteModalOpen(true);
               }}
             >
               Delete
-            </button>
-            <button
-              className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
-              onClick={() => toast.dismiss(toastId)}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              onClick={() => goTo(`/packages/view/${row.original.id}`)}
             >
-              Cancel
-            </button>
-          </div>
-        </div>
-      );
-    };
-
-    // Save package 
-    const handleSave = async (pkg) => {
-      try {
-        if (pkg.id) {
-          await packageApi.updatePackage(pkg.id, pkg);
-          toast.success("Package updated successfully");
-        } else {
-          await packageApi.createPackage(pkg);
-          toast.success("Package added successfully");
-        }
-        setShowForm(false);
-        setEditing(null);
-        await loadPackages();
-      } catch (err) {
-        console.error("Save failed", err);
-        toast.error("Failed to save package");
-      }
-    };
-
-
+              View
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6">
-      <PageBreadcrumb  paths={["Default Packages", []]} />
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">Manage Tour Packages</h2>
-        <button
-          onClick={() => {
-            nav("/packages/add")
-          }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
-        >
-          <Plus size={18} /> Add Package
-        </button>
-      </div>
+      <PageBreadcrumb title="Package Management" />
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left ">Name</th>
-              <th className="p-3">Price ($)</th>
-              <th className="p-3">Passengers</th>
-              <th className="p-3">Duration</th>
-              <th className="p-3">Vehicle</th>
-              <th className="p-3">Guide</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {packages.map((pkg) => (
-              <tr key={pkg.id} className="border-t">
-                <td className="p-3">{pkg.name}</td>
-                <td className="p-3 text-center">{pkg.totalPrice}</td>
-                <td className="p-3 text-center">{pkg.passengers}</td>
-                <td className="p-3 text-center">{pkg.duration}</td>
-                <td className="p-3 text-center">{pkg.vehicle}</td>
-                <td className="p-3 text-center">{pkg.guide}</td>
-                <td className="p-3 flex justify-center gap-3">
-                  <button
-                    onClick={() => nav(`/packages/edit/${pkg.id}`)}
-                    className="text-blue-600"
-                  >
-                    <Pencil size={18} />
-                  </button>
+      <div className="bg-white border rounded-md shadow-2xl md:pb-3">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row px-6 py-3 border-b items-center gap-3">
+          <h1 className="text-xl font-medium w-full md:w-auto">
+            Tour Packages
+          </h1>
 
-                  <button
-                    onClick={() => handleDelete(pkg.id)}
-                    className="text-red-600"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="ml-auto flex flex-col md:flex-row gap-3">
+            <Button variant="outline" className="border border-black" size="lg">
+              <Download /> Export
+            </Button>
 
-      {showForm && (
-        <PackageForm
-          initial={editing}
-          onClose={() => setShowForm(false)}
-          onSave={handleSave}
+            <Button
+              className="bg-blue-700 text-white hover:bg-blue-950"
+              size="lg"
+              onClick={() => goTo("/packages/add")}
+            >
+              <Plus /> Add New Package
+            </Button>
+          </div>
+        </div>
+
+        {/* DATA TABLE */}
+        <DataTable
+          key={packages.length}
+          columns={packageColumns}
+          data={packages}
+          rowIdAccessor="id"
         />
-      )}
+      </div>
+
+      {/* DELETE CONFIRM MODAL */}
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        title="Delete Package"
+        message="Are you sure you want to delete"
+        itemName={selectedPackage?.name || ""}
+      />
     </div>
   );
 }
