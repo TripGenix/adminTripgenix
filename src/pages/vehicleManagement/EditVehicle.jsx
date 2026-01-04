@@ -106,9 +106,7 @@ export default function EditVehicle() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await axios.get(
-          "http://localhost:8080/categoryController/api/v1"
-        );
+        const res = awaitvehicleApi.getVehicleCategories();
 
         const formatted = res.data.map((item) => ({
           value: item.id,
@@ -124,9 +122,7 @@ export default function EditVehicle() {
     loadCategories();
   }, []);
 
-  // -----------------------------
   // Load Vehicle
-  // -----------------------------
   useEffect(() => {
     async function loadVehicle() {
       try {
@@ -169,18 +165,15 @@ export default function EditVehicle() {
     loadVehicle();
   }, [id]);
 
-  // -----------------------------
   // Auto select category
-  // -----------------------------
   useEffect(() => {
     if (existingVehicle && categories.length > 0) {
       form.setValue("category", Number(existingVehicle.type));
     }
   }, [categories, existingVehicle]);
+  
 
-  // -----------------------------
   // Submit Update
-  // -----------------------------
   async function onSubmit(values) {
     if (!existingVehicle) return;
 

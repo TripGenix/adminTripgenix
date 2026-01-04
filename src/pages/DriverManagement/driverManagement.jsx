@@ -218,9 +218,9 @@ export default function DriverManagement() {
           <h1 className="text-xl font-medium w-full md:w-auto">Drivers List</h1>
 
           <div className="ml-auto flex flex-col md:flex-row gap-3">
-            <Button variant="outline" className="border border-black" size="lg">
+            {/* <Button variant="outline" className="border border-black" size="lg">
               <Download /> Export
-            </Button>
+            </Button> */}
 
             <Button
               className="bg-blue-700 text-white hover:bg-blue-950"

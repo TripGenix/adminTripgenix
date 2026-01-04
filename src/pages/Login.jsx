@@ -48,12 +48,12 @@ export default function Login() {
       const { token, username, email: userEmail } = res.data;
 
       if (token) {
-        authLogin(token); // ✅ ONLY THIS
+        authLogin(token); 
 
         localStorage.setItem("userName", username);
         localStorage.setItem("userEmail", userEmail);
 
-        nav("/dashboard"); // ✅ works now
+        nav("/dashboard"); 
       } else {
         setError("Login failed: invalid response from server.");
       }

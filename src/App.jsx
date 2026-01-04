@@ -20,11 +20,11 @@ import AccountSettings from "@/pages/AccountSettings";
 
 import AdminPackagesPage from "@/pages/DefaultPackages/AdminPackagesPage";
 import PackageForm from "@/pages/DefaultPackages/PackageForm";
-
+import { useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem("token");
+  const { isAuthenticated } = useAuth();
 
   const ProtectedRoute = ({ children }) => {
     if (!isAuthenticated) {

@@ -108,9 +108,7 @@ export default function AddVehicle() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await axios.get(
-          "http://localhost:8080/categoryController/api/v1"
-        );
+        const res = await vehicleApi.getVehicleCategories();
         const formatted = res.data.map((item) => ({
           value: item.id,
           label: item.Category,

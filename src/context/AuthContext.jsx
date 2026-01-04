@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.clear();
     setIsAuthenticated(false);
   };
 
