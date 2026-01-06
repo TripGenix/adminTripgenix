@@ -148,7 +148,7 @@ export default function CreateDriver() {
         setCategoryOptions(
           resCategory.data.map((item) => ({
             value: item.id,
-            label: item.Category,
+            label: item.category,
           }))
         );
 

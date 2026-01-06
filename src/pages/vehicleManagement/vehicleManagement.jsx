@@ -37,7 +37,7 @@ export default function VehicleManagement() {
       loadVehicles();
       setLoading(false);
     }
-  }, [loading]);
+  }, [loading,isDeleting]);
 
   async function loadVehicles() {
     try {

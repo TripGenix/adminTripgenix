@@ -91,7 +91,7 @@ export default function EditDriver() {
         setCategoryOptions(
           resCategory.data.map((item) => ({
             value: item.id,
-            label: item.Category,
+            label: item.category,
           }))
         );
 

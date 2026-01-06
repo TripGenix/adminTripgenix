@@ -36,7 +36,7 @@ export default function DriverManagement() {
       loadDrivers();
       setLoading(false);
     }
-  }, [loading]);
+  }, [loading,isDeleting]);
 
   async function loadDrivers() {
     try {
