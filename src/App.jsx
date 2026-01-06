@@ -22,6 +22,7 @@ import AdminPackagesPage from "@/pages/DefaultPackages/AdminPackagesPage";
 import PackageForm from "@/pages/DefaultPackages/PackageForm";
 import { useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
+import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -68,6 +69,13 @@ function App() {
                     <Route index element={<DriverManagement />} />
                     <Route path="add" element={<AddDriver />} />
                     <Route path="edit/:id" element={<EditDriver />} />
+                  </Route>
+
+                  {/* TourGuide Routes */}
+                  <Route path="tour-guide">
+                    <Route index element={<TourGuideManagement />} />
+                    {/* <Route path="add" element={<AddDriver />} />
+                    <Route path="edit/:id" element={<EditDriver />} /> */}
                   </Route>
 
                   {/* Package Routes */}

@@ -15,8 +15,12 @@ import {
   SearchIcon,
   SettingsIcon,
   CarTaxiFront,
-  Users
+  Users,
+  UserStar
+  
+  
 } from "lucide-react"
+
 
 import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
@@ -62,6 +66,12 @@ const data = {
       title:"Packages",
       url:"/packages",
       icon:ClipboardListIcon,
+    },
+
+    {
+      title:"Tour Guide",
+      url:"/tour-guide",
+      icon:UserStar,
     }
     
     
