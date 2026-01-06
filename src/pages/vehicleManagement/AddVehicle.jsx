@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import useNavigator from "@/hooks/use-navigator";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import GooglePlaceInput from "@/components/GooglePlaceInput";
 import {
   Form,
   FormField,
@@ -52,6 +52,13 @@ const schema = z.object({
   state: z.string().min(1, "State required"),
   postalCode: z.string().min(1, "Postal code required"),
   dob: z.string().min(1, "Date of birth required"),
+  location: z.string().min(1, "Vehicle location is required"),
+  latitude: z.number({
+    required_error: "Latitude is required",
+  }),
+  longitude: z.number({
+    required_error: "Longitude is required",
+  }),
 
   // Multiple Images (must be at least 1)
   vehicleImages: z
@@ -70,9 +77,7 @@ const schema = z.object({
   ownerImage: z.instanceof(File, { message: "Owner image required" }),
 });
 
-// -------------------------------
 // MAIN COMPONENT
-// -------------------------------
 export default function AddVehicle() {
   const goTo = useNavigator();
 
@@ -81,7 +86,7 @@ export default function AddVehicle() {
     defaultValues: {
       vehicleName: "",
       vehicleNumber: "",
-      category: "",
+      category: "select category",
       passengerCount: "",
       costPerKm: "",
       bookingPrice: "",
@@ -100,6 +105,9 @@ export default function AddVehicle() {
       vehicleImages: [],
       ownerImage: null,
       documents: null,
+      location: "",
+      latitude: null,
+      longitude: null,
     },
   });
 
@@ -111,8 +119,9 @@ export default function AddVehicle() {
         const res = await vehicleApi.getVehicleCategories();
         const formatted = res.data.map((item) => ({
           value: item.id,
-          label: item.Category,
+          label: item.category,
         }));
+        console.log(res.data);
         setCategories(formatted);
       } catch (error) {
         console.error("Failed to load categories", error);
@@ -150,6 +159,9 @@ export default function AddVehicle() {
           // Build payload
           const payload = {
             ...values,
+            passengerCount: Number(values.passengerCount),
+            costPerKm: Number(values.costPerKm),
+            bookingPrice: Number(values.bookingPrice),
             vehicleImages: uploadedVehicleImages,
             ownerImage: ownerImageUrl,
             documentUrl,
@@ -307,6 +319,26 @@ export default function AddVehicle() {
                       setImages={(imgs) => field.onChange(imgs)}
                     />
 
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Location</FormLabel>
+                    <FormControl>
+                      <GooglePlaceInput
+                        value={field.value}
+                        onChange={(data) => {
+                          form.setValue("location", data.location);
+                          form.setValue("latitude", data.latitude);
+                          form.setValue("longitude", data.longitude);
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

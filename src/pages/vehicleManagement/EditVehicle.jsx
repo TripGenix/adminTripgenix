@@ -11,7 +11,7 @@ import uploadToSupabase from "@/utils/uploadImage";
 import ImageUploader from "@/components/ImageUploder";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import useNavigator from "@/hooks/use-navigator";
-
+import GooglePlaceInput from "@/components/GooglePlaceInput";
 import {
   Form,
   FormField,
@@ -47,6 +47,10 @@ const editSchema = z.object({
   bookingPrice: z.string().min(1),
   status: z.string().min(1),
   description: z.string().min(1),
+
+  location: z.string().min(1, "Location is required"),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
 
   ownerName: z.string().min(1),
   ownerId: z.string().min(1),
@@ -93,6 +97,9 @@ export default function EditVehicle() {
       state: "",
       postalCode: "",
       dob: "",
+      location: "",
+      latitude: null,
+      longitude: null,
 
       vehicleImages: [],
       ownerImage: null,
@@ -106,11 +113,11 @@ export default function EditVehicle() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = awaitvehicleApi.getVehicleCategories();
+        const res = await vehicleApi.getVehicleCategories();
 
         const formatted = res.data.map((item) => ({
           value: item.id,
-          label: item.Category,
+          label: item.category,
         }));
 
         setCategories(formatted);
@@ -140,6 +147,9 @@ export default function EditVehicle() {
           bookingPrice: String(v.bookingPrice),
           status: v.status,
           description: v.description,
+          location: v.location,
+          latitude: v.latitude,
+          longitude: v.longitude,
 
           ownerName: v.owner.name,
           ownerId: v.owner.nic,
@@ -154,7 +164,7 @@ export default function EditVehicle() {
           ownerImage: null,
           documents: null,
         });
-
+        // console.log(v);
         setLoading(false);
       } catch {
         toast.error("Failed to load vehicle.");
@@ -171,7 +181,6 @@ export default function EditVehicle() {
       form.setValue("category", Number(existingVehicle.type));
     }
   }, [categories, existingVehicle]);
-  
 
   // Submit Update
   async function onSubmit(values) {
@@ -381,6 +390,27 @@ export default function EditVehicle() {
                       images={field.value}
                       setImages={(imgs) => field.onChange(imgs)}
                     />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Location</FormLabel>
+                    <FormControl>
+                      <GooglePlaceInput
+                        value={field.value}
+                        onChange={(data) => {
+                          form.setValue("location", data.location);
+                          form.setValue("latitude", data.latitude);
+                          form.setValue("longitude", data.longitude);
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
