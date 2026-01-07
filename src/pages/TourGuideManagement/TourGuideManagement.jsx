@@ -230,7 +230,7 @@ function TourGuideManagement() {
             <Button
               className="bg-blue-700 text-white hover:bg-blue-950"
               size="lg"
-              onClick={() => goTo("/tour-guide-management/add")}
+              onClick={() => goTo("/tour-guide/add")}
             >
               <Plus /> Add New Guide
             </Button>
