@@ -198,7 +198,7 @@ export default function DriverManagement() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() => alert("Driver: " + row.original.firstName)}
+              onClick={() => goTo(`view/${row.original.driverId}`)}
             >
               View
             </DropdownMenuItem>

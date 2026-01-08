@@ -23,6 +23,8 @@ import PackageForm from "@/pages/DefaultPackages/PackageForm";
 import { useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
+import ViewDriver from "./pages/DriverManagement/ViewDriver";
+import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -62,6 +64,7 @@ function App() {
                     <Route index element={<VehicleManagement />} />
                     <Route path="add" element={<AddVehicle />} />
                     <Route path="edit/:id" element={<EditVehicle />} />
+                    <Route path="view/:id" element={<ViewVehicle />} />
                   </Route>
 
                   {/* Driver Routes */}
@@ -69,6 +72,7 @@ function App() {
                     <Route index element={<DriverManagement />} />
                     <Route path="add" element={<AddDriver />} />
                     <Route path="edit/:id" element={<EditDriver />} />
+                    <Route path="view/:id" element={<ViewDriver />} />
                   </Route>
 
                   {/* TourGuide Routes */}

@@ -151,7 +151,7 @@ export default function VehicleManagement() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() => alert("View Vehicle: " + row.original.numberPlate)}
+              onClick={() => goTo(`view/${row.original.vehicleId}`)}
             >
               View
             </DropdownMenuItem>
