@@ -175,7 +175,7 @@ export default function AddVehicle() {
           success: () => {
             goTo("/Vehicle");
             form.reset();
-            return "Save successful! 👋";
+            return "Save successful!";
           },
           error: (err) => {
             const backendMessage =
