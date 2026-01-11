@@ -26,6 +26,7 @@ import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement
 import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 import AddTourGuide from "./pages/TourGuideManagement/AddTourGuide";
+import EditTourGuide from "./pages/TourGuideManagement/EditTourGuide";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -80,7 +81,7 @@ function App() {
                   <Route path="tour-guide">
                     <Route index element={<TourGuideManagement />} />
                     <Route path="add" element={<AddTourGuide />} />
-                    {/* <Route path="edit/:id" element={<EditDriver />} /> */}
+                    <Route path="edit/:id" element={<EditTourGuide />} />
                   </Route>
 
                   {/* Package Routes */}
