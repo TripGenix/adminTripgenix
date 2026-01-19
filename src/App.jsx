@@ -26,6 +26,11 @@ import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement
 import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 
+import UserManagement from "./pages/UserManagement/UserManagement";
+import AddUser from "./pages/UserManagement/AddUser";
+import EditUser from "./pages/UserManagement/EditUser";
+
+
 function App() {
   const { isAuthenticated } = useAuth();
 
@@ -94,6 +99,13 @@ function App() {
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />
+
+                  {/* User Routes */}
+                  <Route path="user-management">
+                    <Route index element={<UserManagement />} />
+                    <Route path="user-management/add" element={<AddUser />} />
+                    <Route path="user-management/edit/:id" element={<EditUser />} />
+                  </Route>
 
                   {/* Catch-all inside layout */}
                   <Route path="*" element={<Navigate to="/dashboard" />} />

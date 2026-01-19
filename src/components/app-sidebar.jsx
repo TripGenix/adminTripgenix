@@ -72,6 +72,12 @@ const data = {
       title:"Tour Guide",
       url:"/tour-guide",
       icon:UserStar,
+    },
+
+    {
+      title:"Users",
+      url:"/user-management",
+      icon:DatabaseIcon,
     }
     
     
