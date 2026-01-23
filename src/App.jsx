@@ -29,7 +29,7 @@ import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 import UserManagement from "./pages/UserManagement/UserManagement";
 import AddUser from "./pages/UserManagement/AddUser";
 import EditUser from "./pages/UserManagement/EditUser";
-
+import ViewUser from "./pages/UserManagement/ViewUser";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -105,6 +105,7 @@ function App() {
                     <Route index element={<UserManagement />} />
                     <Route path="user-management/add" element={<AddUser />} />
                     <Route path="user-management/edit/:id" element={<EditUser />} />
+                    <Route path="view/:id" element={<ViewUser />} />
                   </Route>
 
                   {/* Catch-all inside layout */}
