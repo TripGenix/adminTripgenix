@@ -18,12 +18,19 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, Upload } from "lucide-react";
 
-import Select from "react-select";
+import ReactSelect from "react-select";
 import axios from "axios";
 import vehicleApi from "@/api/vehicleApi";
 
@@ -413,15 +420,27 @@ export default function EditDriver() {
               />
 
               {/* STATUS */}
-              <FormField
+               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Active / Inactive" />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Suspended">Suspended</SelectItem>
+                        <SelectItem value="Pending_verification">Pending Verification</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -521,7 +540,7 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Allocate Vehicle By Category</FormLabel>
                     <FormControl>
-                      <Select
+                      <ReactSelect
                         isMulti
                         options={categoryOptions}
                         value={categoryOptions.filter((opt) =>
@@ -546,7 +565,7 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Allocate Vehicle By Number</FormLabel>
                     <FormControl>
-                      <Select
+                      <ReactSelect
                         isMulti
                         options={vehicleOptions}
                         value={vehicleOptions.filter((opt) =>

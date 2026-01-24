@@ -25,6 +25,7 @@ import { Toaster } from "sonner";
 import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
 import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
+import AddNewTour from "./pages/tour-tabs/AddNewTour";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -90,7 +91,13 @@ function App() {
                   </Route>
 
                   {/* Trips */}
-                  <Route path="trips/*" element={<Trip />} />
+                  {/* <Route path="trips/*" element={<Trip />} />
+                  <Route path="trips/add-new" element={<AddNewTour />} /> */}
+
+                  <Route path="trips">
+                    <Route index element={<Trip />} />
+                    <Route path="add-new" element={<AddNewTour />} />
+                  </Route>
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />

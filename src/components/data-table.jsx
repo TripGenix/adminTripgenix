@@ -75,7 +75,7 @@ export function DragHandle({ id }) {
 // --------------------------------------
 // DRAGGABLE ROW
 // --------------------------------------
-function DraggableRow({ row, rowIdAccessor }) {
+function DraggableRow({ row, rowIdAccessor, rowClassName }) {
   const { setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.original[rowIdAccessor].toString(),
   });
@@ -84,7 +84,11 @@ function DraggableRow({ row, rowIdAccessor }) {
     <TableRow
       ref={setNodeRef}
       data-dragging={isDragging}
-      className="relative z-0 data-[dragging=true]:opacity-70"
+      className={`
+    relative z-0
+    data-[dragging=true]:opacity-70
+    ${typeof rowClassName === "function" ? rowClassName(row) : ""}
+  `}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -106,6 +110,7 @@ export function DataTable({
   columns,
   data: initialData,
   rowIdAccessor = "id",
+  rowClassName,
 }) {
   const [data, setData] = React.useState(initialData);
   React.useEffect(() => {
@@ -179,6 +184,7 @@ export function DataTable({
                     key={row.original[rowIdAccessor].toString()}
                     row={row}
                     rowIdAccessor={rowIdAccessor}
+                    rowClassName={rowClassName}
                   />
                 ))}
               </SortableContext>

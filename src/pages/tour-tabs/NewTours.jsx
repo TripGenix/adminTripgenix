@@ -84,7 +84,7 @@ export default function NewTours() {
         <h2 className="text-2xl font-semibold text-gray-900">New Tours</h2>
 
         <button
-          onClick={() => navigate("/tours/new")}
+          onClick={() => navigate("add-new")}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow"
         >
           <Plus size={18} />

@@ -5,6 +5,7 @@ import OngoingTours from "./OngoingTours";
 import CancelledTours from "./CancelledTours";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
 import AllTours from "./AllTours";
+import DriverConfirmed from "./DriverConfirmed";
 
 export default function Trips() {
   return (
@@ -76,6 +77,10 @@ export default function Trips() {
 
           <TabsContent value="confirmed">
             <ConfirmedTours />
+          </TabsContent>
+
+          <TabsContent value="driver-pending">
+            <DriverConfirmed />
           </TabsContent>
 
           <TabsContent value="ongoing">

@@ -45,6 +45,7 @@ const editSchema = z.object({
   passengerCount: z.string().min(1),
   costPerKm: z.string().min(1),
   bookingPrice: z.string().min(1),
+  driverSalaryPerDay: z.string().min(1),
   status: z.string().min(1),
   description: z.string().min(1),
 
@@ -88,6 +89,7 @@ export default function EditVehicle() {
       bookingPrice: "",
       status: "",
       description: "",
+      driverSalaryPerDay: "",
 
       ownerName: "",
       ownerId: "",
@@ -145,6 +147,7 @@ export default function EditVehicle() {
           passengerCount: String(v.passengerCount),
           costPerKm: String(v.costPerKm),
           bookingPrice: String(v.bookingPrice),
+          driverSalaryPerDay: String(v.driverSalaryPerDay),
           status: v.status,
           description: v.description,
           location: v.location,
@@ -195,23 +198,23 @@ export default function EditVehicle() {
                   values.vehicleImages.map((file) =>
                     uploadToSupabase(
                       file,
-                      `vehicle-images/${values.vehicleNumber}`
-                    )
-                  )
+                      `vehicle-images/${values.vehicleNumber}`,
+                    ),
+                  ),
                 )
               : existingVehicle.vehicleImages;
 
           const newOwnerImage = values.ownerImage
             ? await uploadToSupabase(
                 values.ownerImage,
-                `owner-images/${values.vehicleNumber}`
+                `owner-images/${values.vehicleNumber}`,
               )
             : existingVehicle.owner.ownerImage;
 
           const newDocumentUrl = values.documents
             ? await uploadToSupabase(
                 values.documents,
-                `vehicle-docs/${values.vehicleNumber}`
+                `vehicle-docs/${values.vehicleNumber}`,
               )
             : existingVehicle.documentUrl;
 
@@ -221,10 +224,13 @@ export default function EditVehicle() {
             passengerCount: Number(values.passengerCount),
             costPerKm: Number(values.costPerKm),
             bookingPrice: Number(values.bookingPrice),
+            driverSalaryPerDay: Number(values.driverSalaryPerDay),
             vehicleImages: newVehicleImages,
             ownerImage: newOwnerImage,
             documentUrl: newDocumentUrl,
           };
+
+          console.log(payload);
 
           return vehicleApi.updateVehicle(id, payload);
         })(),
@@ -233,7 +239,7 @@ export default function EditVehicle() {
           loading: "Updating vehicle...",
           success: "Vehicle updated successfully!",
           error: "Update failed. Try again.",
-        }
+        },
       );
 
       goTo("/vehicle");
@@ -249,7 +255,7 @@ export default function EditVehicle() {
   // -----------------------------
   return (
     <div className="p-6">
-      <PageBreadcrumb title="Edit Vehicle" paths={["Vehicle Management"]} />
+      <PageBreadcrumb title="Edit Vehicle" paths={["Vehicle Management",""]} />
 
       <div className="bg-white border rounded-md shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Vehicle Details</h2>
@@ -362,7 +368,22 @@ export default function EditVehicle() {
                   </FormItem>
                 )}
               />
+
+               <FormField
+              control={form.control}
+              name="driverSalaryPerDay"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Driver Salary Per Day (LKR)</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
+           
 
             {/* EXISTING IMAGES */}
             <div className="w-full md:w-6/12">

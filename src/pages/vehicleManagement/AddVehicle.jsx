@@ -43,6 +43,7 @@ const schema = z.object({
   bookingPrice: z.string().min(1, "Booking price required"),
   status: z.string().min(1, "Status is required"),
   description: z.string().min(1, "Add details about your vehicle"),
+  driverSalaryPerDay: z.string().min(1, "Driver salary per day is required"),
 
   ownerName: z.string().min(1, "Owner name required"),
   ownerId: z.string().min(1, "Owner ID required"),
@@ -92,6 +93,7 @@ export default function AddVehicle() {
       bookingPrice: "",
       status: "Available",
       description: "",
+      driverSalaryPerDay: "",
 
       ownerName: "",
       ownerId: "",
@@ -130,9 +132,10 @@ export default function AddVehicle() {
 
     loadCategories();
   }, []);
+
   // SUBMIT LOGIC
   async function onSubmit(values) {
-    console.log("Submitting...", values);
+    // console.log("Submitting...", values);
 
     try {
       await toast.promise(
@@ -140,20 +143,20 @@ export default function AddVehicle() {
           // Upload Vehicle Images
           const uploadedVehicleImages = await Promise.all(
             values.vehicleImages.map((file) =>
-              uploadToSupabase(file, `vehicle-images/${values.vehicleNumber}`)
-            )
+              uploadToSupabase(file, `vehicle-images/${values.vehicleNumber}`),
+            ),
           );
 
           //Upload Owner Image
           const ownerImageUrl = await uploadToSupabase(
             values.ownerImage,
-            `owner-images/${values.vehicleNumber}`
+            `owner-images/${values.vehicleNumber}`,
           );
 
           // Upload Document
           const documentUrl = await uploadToSupabase(
             values.documents,
-            `vehicle-docs/${values.vehicleNumber}`
+            `vehicle-docs/${values.vehicleNumber}`,
           );
 
           // Build payload
@@ -162,11 +165,13 @@ export default function AddVehicle() {
             passengerCount: Number(values.passengerCount),
             costPerKm: Number(values.costPerKm),
             bookingPrice: Number(values.bookingPrice),
+            driverSalaryPerDay: Number(values.driverSalaryPerDay),
             vehicleImages: uploadedVehicleImages,
             ownerImage: ownerImageUrl,
             documentUrl,
           };
 
+          console.log("Payload:", payload);
           return vehicleApi.createVehicle(payload);
         })(),
 
@@ -186,7 +191,7 @@ export default function AddVehicle() {
 
             return backendMessage;
           },
-        }
+        },
       );
     } catch (err) {
       console.error("Save failed", err);
@@ -300,6 +305,20 @@ export default function AddVehicle() {
                     <FormLabel>Booking Price (LKR)</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="1000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="driverSalaryPerDay"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Driver Salary Per Day (LKR)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="3500" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -541,7 +560,6 @@ export default function AddVehicle() {
                           value={field.value || ""}
                           onChange={(e) => field.onChange(e.target.value)}
                         />
-                        <CalendarIcon className="absolute right-3 top-3 h-4 w-4 opacity-50" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -557,25 +575,17 @@ export default function AddVehicle() {
                   <FormItem>
                     <FormLabel>Owner Image</FormLabel>
                     <FormControl>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                        type="button"
-                        onClick={() =>
-                          document.getElementById("ownerImageInput").click()
-                        }
-                      >
-                        <Upload className="mr-2" /> Upload Image
-                      </Button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => field.onChange(e.target.files[0])}
+                        className="block w-full text-sm
+                     file:mr-4 file:py-2 file:px-4
+                     file:rounded file:border-0
+                     file:bg-primary file:text-primary-foreground
+                     hover:file:bg-primary/90"
+                      />
                     </FormControl>
-
-                    <input
-                      id="ownerImageInput"
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => field.onChange(e.target.files[0])}
-                    />
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -587,7 +597,38 @@ export default function AddVehicle() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => form.reset()}
+                onClick={() => {
+                  form.reset({
+                    vehicleName: "",
+                    vehicleNumber: "",
+                    category: "",
+                    passengerCount: "",
+                    costPerKm: "",
+                    bookingPrice: "",
+                    driverSalaryPerDay: "",
+                    status: "Available",
+                    description: "",
+
+                    ownerName: "",
+                    ownerId: "",
+                    phone: "",
+                    address1: "",
+                    address2: "",
+                    state: "",
+                    postalCode: "",
+                    dob: "",
+
+                    vehicleImages: [],
+                    ownerImage: null,
+                    documents: null,
+
+                    location: "",
+                    latitude: null,
+                    longitude: null,
+                  });
+
+                  form.clearErrors();
+                }}
               >
                 Clear
               </Button>
