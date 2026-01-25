@@ -26,6 +26,7 @@ import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement
 import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 import AddNewTour from "./pages/tour-tabs/AddNewTour";
+import EmailSendView from "./pages/tour-tabs/emailsendView";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -97,10 +98,13 @@ function App() {
                   <Route path="trips">
                     <Route index element={<Trip />} />
                     <Route path="add-new" element={<AddNewTour />} />
+                      <Route path="send-email-view/:id" element={<EmailSendView />} />
+
                   </Route>
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />
+                  
 
                   {/* Catch-all inside layout */}
                   <Route path="*" element={<Navigate to="/dashboard" />} />

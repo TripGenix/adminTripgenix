@@ -11,6 +11,8 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import bookingApi from "../../api/ToursApi";
 
+import { Client } from "@stomp/stompjs";
+
 export default function NewTours() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +35,39 @@ export default function NewTours() {
       navigate(location.pathname, { replace: true });
     }
   }, [location.state]);
+
+useEffect(() => {
+  const client = new Client({
+    brokerURL: "ws://localhost:8087/ws",
+    reconnectDelay: 5000,
+    debug: (str) => console.log(str),
+
+    onConnect: () => {
+      console.log("✅ NewTours WebSocket connected");
+
+      client.subscribe("/topic/new-tour-add", (message) => {
+        console.log("📢 New tour added:", message.body);
+        loadTours(); // 🔥 refresh list
+      });
+    },
+
+    onStompError: (frame) => {
+      console.error("❌ Broker error:", frame.headers["message"]);
+    },
+
+    onWebSocketClose: () => {
+      console.warn("⚠️ WebSocket connection closed");
+    },
+  });
+
+  client.activate();
+
+  return () => {
+    client.deactivate();
+    console.log("🔌 NewTours WebSocket disconnected");
+  };
+}, []);
+
 
   const loadTours = () => {
     setLoading(true);
@@ -148,9 +183,10 @@ export default function NewTours() {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+         <div className="max-h-[420px] overflow-y-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-100 text-gray-700">
+          <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10">
             <tr>
               <th className="px-4 py-3 text-left">Reference ID</th>
               <th className="px-4 py-3 text-left">Customer</th>
@@ -232,6 +268,7 @@ export default function NewTours() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
