@@ -5,6 +5,11 @@ const bookingApi = {
     return axiosClientTours.get("/get_new_bookings");
   },
 
+    getConfirmedTours() {
+    return axiosClientTours.get("/get_confirmed_bookings");
+  },
+
+
   // Get all  tours
   getAllTours() {
     return axiosClientTours.get("/get_all_bookings");
