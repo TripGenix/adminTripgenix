@@ -30,8 +30,8 @@ export default function EmailSendView() {
 
         const tourId = Number(referenceId.split("-").pop());
 
-        const paymentUrl = `http://localhost:5173/payment/${referenceId}?amount=${amount}&currency=${currency}`;
-        const cancelUrl = `http://localhost:5173/cancel-tour?bookingId=${tourId}`;
+        const paymentUrl = `${import.meta.env.VITE_WEB_HOST_URL}/payment/${tourId}`;
+        const cancelUrl = `${import.meta.env.VITE_WEB_HOST_URL}/cancel-tour?bookingId=${tourId}`;
         // 🔹 Build email HTML
         setEmailContent(`
 <!DOCTYPE html>
