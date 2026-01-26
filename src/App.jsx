@@ -20,6 +20,8 @@ import AccountSettings from "@/pages/AccountSettings";
 
 import AdminPackagesPage from "@/pages/DefaultPackages/AdminPackagesPage";
 import PackageForm from "@/pages/DefaultPackages/PackageForm";
+import ViewPackages from "@/pages/DefaultPackages/ViewPackages";
+
 import { useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
@@ -92,6 +94,7 @@ function App() {
                     <Route index element={<AdminPackagesPage />} />
                     <Route path="add" element={<PackageForm />} />
                     <Route path="edit/:id" element={<PackageForm />} />
+                    <Route path="view/:id" element={<ViewPackages />} />
                   </Route>
 
                   {/* Trips */}
