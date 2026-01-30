@@ -5,6 +5,7 @@ import OngoingTours from "./OngoingTours";
 import CancelledTours from "./CancelledTours";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
 import AllTours from "./AllTours";
+import DriverConfirmed from "./DriverConfirmed";
 
 export default function Trips() {
   return (
@@ -30,10 +31,10 @@ export default function Trips() {
           </TabsTrigger>
 
           <TabsTrigger
-            value="passenger-confirmed"
+            value="tourist-confirmed"
             className="w-full text-green-600  data-[state=active]:bg-green-600 data-[state=active]:text-white"
           >
-            Passenger Confirmed
+            Tourist Confirmed
           </TabsTrigger>
 
           <TabsTrigger
@@ -74,8 +75,12 @@ export default function Trips() {
             <NewTours />
           </TabsContent>
 
-          <TabsContent value="confirmed">
+          <TabsContent value="tourist-confirmed">
             <ConfirmedTours />
+          </TabsContent>
+
+          <TabsContent value="driver-pending">
+            <DriverConfirmed />
           </TabsContent>
 
           <TabsContent value="ongoing">
