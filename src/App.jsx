@@ -27,6 +27,7 @@ import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 import AddNewTour from "./pages/tour-tabs/AddNewTour";
 import EmailSendView from "./pages/tour-tabs/emailsendView";
+import ViewTour from "./pages/tour-tabs/viewNewTours";
 
 import UserManagement from "./pages/UserManagement/UserManagement";
 import AddUser from "./pages/UserManagement/AddUser";
@@ -103,7 +104,8 @@ function App() {
                   <Route path="trips">
                     <Route index element={<Trip />} />
                     <Route path="add-new" element={<AddNewTour />} />
-                      <Route path="send-email-view/:id" element={<EmailSendView />} />
+                    <Route path="send-email-view/:id" element={<EmailSendView />} />
+                    <Route path="view/:id" element={<ViewTour />} />
 
                   </Route>
 

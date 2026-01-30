@@ -30,6 +30,14 @@ export default function Trips() {
             New Tours
           </TabsTrigger>
 
+           <TabsTrigger
+            value="driver-pending"
+            className="w-full text-yellow-500 data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+          >
+            Driver Confirmed
+          </TabsTrigger>
+
+
           <TabsTrigger
             value="tourist-confirmed"
             className="w-full text-green-600  data-[state=active]:bg-green-600 data-[state=active]:text-white"
@@ -37,13 +45,7 @@ export default function Trips() {
             Tourist Confirmed
           </TabsTrigger>
 
-          <TabsTrigger
-            value="driver-pending"
-            className="w-full text-yellow-500 data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
-          >
-            Driver Pending
-          </TabsTrigger>
-
+         
           <TabsTrigger
             value="in-progress"
             className="w-full text-indigo-600 data-[state=active]:bg-indigo-600 data-[state=active]:text-white"

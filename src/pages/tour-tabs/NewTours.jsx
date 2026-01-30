@@ -193,7 +193,7 @@ useEffect(() => {
               <th className="px-4 py-3 text-left">Route</th>
               <th className="px-4 py-3 text-left">Date</th>
               <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-center">Is send Mail</th>
+              {/* <th className="px-4 py-3 text-center">Is send Mail</th> */}
               <th className="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
@@ -227,7 +227,7 @@ useEffect(() => {
                       {tour.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center ">
+                  {/* <td className="px-4 py-3 text-center ">
                     {tour.sendConfirmEmail ? (
                       <button className="p-2 rounded-lg  bg-green-100 hover:bg-green-200 text-green-700">
                         <MailCheck size={16} />
@@ -242,12 +242,12 @@ useEffect(() => {
                         <Send size={16} />
                       </button>
                     )}
-                  </td>
+                  </td> */}
                   <td className="px-4 py-3">
                     <div className="flex justify-center gap-3">
                       <button
                         onClick={() =>
-                          navigate(`/tours/view/${tour.bookingId}`)
+                          navigate(`view/${tour.bookingId}`)
                         }
                         className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
                       >
