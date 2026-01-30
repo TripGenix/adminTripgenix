@@ -28,8 +28,10 @@ export default function EmailSendView() {
         const amount = data.routeDetails.bookingPrice;
         const currency = "LKR";
 
-        const paymentUrl = `http://localhost:5173/payment/${referenceId}?amount=${amount}&currency=${currency}`;
+        const tourId = Number(referenceId.split("-").pop());
 
+        const paymentUrl = `${import.meta.env.VITE_WEB_HOST_URL}/payment/${tourId}`;
+        const cancelUrl = `${import.meta.env.VITE_WEB_HOST_URL}/cancel-tour?bookingId=${tourId}`;
         // 🔹 Build email HTML
         setEmailContent(`
 <!DOCTYPE html>
@@ -94,22 +96,47 @@ export default function EmailSendView() {
                 </tr>
               </table>
 
-              <!-- PAYMENT BUTTON -->
-              <div style="text-align:center; margin:30px 0;">
-                <a href="${paymentUrl}"
-                   style="
-                     display:inline-block;
-                     background:#2563eb;
-                     color:#ffffff;
-                     padding:16px 34px;
-                     border-radius:8px;
-                     text-decoration:none;
-                     font-weight:600;
-                     font-size:16px;
-                   ">
-                  💳 Make Your Payment
-                </a>
-              </div>
+             <!-- PAYMENT BUTTONS -->
+<div style="text-align:center; margin:30px 0;">
+
+  <!-- Cancel Tour -->
+  <a href="${cancelUrl}"
+     style="
+       display:inline-block;
+       min-width:220px;
+       background:#ef4444;
+       color:#ffffff;
+       padding:16px 0;
+       margin:6px;
+       border-radius:8px;
+       text-decoration:none;
+       font-weight:600;
+       font-size:16px;
+       text-align:center;
+     ">
+    Cancel Tour
+  </a>
+
+  <!-- Make Payment -->
+  <a href="${paymentUrl}"
+     style="
+       display:inline-block;
+       min-width:220px;
+       background:#2563eb;
+       color:#ffffff;
+       padding:16px 0;
+       margin:6px;
+       border-radius:8px;
+       text-decoration:none;
+       font-weight:600;
+       font-size:16px;
+       text-align:center;
+     ">
+    💳 Make Your Payment
+  </a>
+
+</div>
+
 
               <p style="font-size:14px; color:#4b5563;">
                 Please complete your payment using the secure link above to
@@ -199,13 +226,21 @@ export default function EmailSendView() {
 
       {/* BOOKING INFO */}
       <div className="bg-white rounded-xl border shadow-sm p-5 space-y-2">
-        <p><b>Reference ID:</b> {booking.referenceId}</p>
-        <p><b>Customer:</b> {booking.bookingDetails.nameOfBooker}</p>
-        <p><b>Email:</b> {booking.bookingDetails.bookerEmail}</p>
-        <p><b>Route:</b> {booking.tripDetails.destinations.join(" → ")}</p>
         <p>
-          <b>Travel Dates:</b>{" "}
-          {booking.tripDetails.startDate} → {booking.tripDetails.endDate}
+          <b>Reference ID:</b> {booking.referenceId}
+        </p>
+        <p>
+          <b>Customer:</b> {booking.bookingDetails.nameOfBooker}
+        </p>
+        <p>
+          <b>Email:</b> {booking.bookingDetails.bookerEmail}
+        </p>
+        <p>
+          <b>Route:</b> {booking.tripDetails.destinations.join(" → ")}
+        </p>
+        <p>
+          <b>Travel Dates:</b> {booking.tripDetails.startDate} →{" "}
+          {booking.tripDetails.endDate}
         </p>
       </div>
 

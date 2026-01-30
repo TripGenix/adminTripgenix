@@ -27,6 +27,8 @@ import { Toaster } from "sonner";
 import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
 import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
+import AddNewTour from "./pages/tour-tabs/AddNewTour";
+import EmailSendView from "./pages/tour-tabs/emailsendView";
 
 import UserManagement from "./pages/UserManagement/UserManagement";
 import AddUser from "./pages/UserManagement/AddUser";
@@ -98,10 +100,19 @@ function App() {
                   </Route>
 
                   {/* Trips */}
-                  <Route path="trips/*" element={<Trip />} />
+                  {/* <Route path="trips/*" element={<Trip />} />
+                  <Route path="trips/add-new" element={<AddNewTour />} /> */}
+
+                  <Route path="trips">
+                    <Route index element={<Trip />} />
+                    <Route path="add-new" element={<AddNewTour />} />
+                      <Route path="send-email-view/:id" element={<EmailSendView />} />
+
+                  </Route>
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />
+                  
 
                   {/* User Routes */}
                   <Route path="user-management">
