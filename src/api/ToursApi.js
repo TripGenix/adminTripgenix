@@ -9,6 +9,9 @@ const bookingApi = {
     return axiosClientTours.get("/get_confirmed_bookings");
   },
 
+  getCancelledTours(){
+    return axiosClientTours.get("/get_cancled_bookings");
+  },
 
   // Get all  tours
   getAllTours() {
