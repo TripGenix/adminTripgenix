@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewTours from "./NewTours";
 import ConfirmedTours from "./ConfirmedTours";
-import OngoingTours from "./OngoingTours";
 import CancelledTours from "./CancelledTours";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
 import AllTours from "./AllTours";
