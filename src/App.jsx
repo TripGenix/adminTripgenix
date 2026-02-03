@@ -28,6 +28,13 @@ import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
 import ViewTourGuide from "./pages/TourGuideManagement/ViewTourGuide";
 import AddTourGuide from "./pages/TourGuideManagement/AddTourGuide";
 import EditTourGuide from "./pages/TourGuideManagement/EditTourGuide";
+import AddNewTour from "./pages/tour-tabs/AddNewTour";
+import EmailSendView from "./pages/tour-tabs/emailsendView";
+
+import UserManagement from "./pages/UserManagement/UserManagement";
+import AddUser from "./pages/UserManagement/AddUser";
+import EditUser from "./pages/UserManagement/EditUser";
+
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -94,10 +101,26 @@ function App() {
                   </Route>
 
                   {/* Trips */}
-                  <Route path="trips/*" element={<Trip />} />
+                  {/* <Route path="trips/*" element={<Trip />} />
+                  <Route path="trips/add-new" element={<AddNewTour />} /> */}
+
+                  <Route path="trips">
+                    <Route index element={<Trip />} />
+                    <Route path="add-new" element={<AddNewTour />} />
+                      <Route path="send-email-view/:id" element={<EmailSendView />} />
+
+                  </Route>
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />
+                  
+
+                  {/* User Routes */}
+                  <Route path="user-management">
+                    <Route index element={<UserManagement />} />
+                    <Route path="user-management/add" element={<AddUser />} />
+                    <Route path="user-management/edit/:id" element={<EditUser />} />
+                  </Route>
 
                   {/* Catch-all inside layout */}
                   <Route path="*" element={<Navigate to="/dashboard" />} />

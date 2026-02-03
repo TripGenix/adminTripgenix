@@ -72,6 +72,12 @@ const data = {
       title:"Tour Guide",
       url:"/tour-guide",
       icon:UserStar,
+    },
+
+    {
+      title:"Users",
+      url:"/user-management",
+      icon:DatabaseIcon,
     }
     
     
@@ -124,23 +130,23 @@ const data = {
   //     ],
   //   },
   // ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
-    },
-  ],
+  // navSecondary: [
+  //   {
+  //     title: "Settings",
+  //     url: "#",
+  //     icon: SettingsIcon,
+  //   },
+  //   {
+  //     title: "Get Help",
+  //     url: "#",
+  //     icon: HelpCircleIcon,
+  //   },
+  //   {
+  //     title: "Search",
+  //     url: "#",
+  //     icon: SearchIcon,
+  //   },
+  // ],
 
 }
 
@@ -164,7 +170,7 @@ const user=useAuthUser();
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
