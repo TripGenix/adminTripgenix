@@ -12,6 +12,7 @@ const bookingApi = {
   getCancelledTours(){
     return axiosClientTours.get("/get_cancled_bookings");
   },
+  
 
   // Get all  tours
   getAllTours() {
@@ -21,6 +22,13 @@ const bookingApi = {
   //Get booking by ID
   getBookingById(id) {
     return axiosClientTours.get(`/get_booking_by_id/${id}`);
+  },
+
+    getStartedTours(){
+    return axiosClientTours.get("/get_started_bookings");
+  },
+   getFinishedTours(){
+    return axiosClientTours.get("/get_finished_bookings");
   },
 
   // Create new booking
