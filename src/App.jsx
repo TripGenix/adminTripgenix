@@ -27,6 +27,9 @@ import { Toaster } from "sonner";
 import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
 import ViewDriver from "./pages/DriverManagement/ViewDriver";
 import ViewVehicle from "./pages/vehicleManagement/ViewVehicle";
+import ViewTourGuide from "./pages/TourGuideManagement/ViewTourGuide";
+import AddTourGuide from "./pages/TourGuideManagement/AddTourGuide";
+import EditTourGuide from "./pages/TourGuideManagement/EditTourGuide";
 import AddNewTour from "./pages/tour-tabs/AddNewTour";
 import EmailSendView from "./pages/tour-tabs/emailsendView";
 import ViewTour from "./pages/tour-tabs/viewNewTours";
@@ -88,8 +91,9 @@ function App() {
                   {/* TourGuide Routes */}
                   <Route path="tour-guide">
                     <Route index element={<TourGuideManagement />} />
-                    {/* <Route path="add" element={<AddDriver />} />
-                    <Route path="edit/:id" element={<EditDriver />} /> */}
+                    <Route path="add" element={<AddTourGuide />} />
+                    <Route path="edit/:id" element={<EditTourGuide />} />
+                    <Route path="view/:id" element={<ViewTourGuide />} />
                   </Route>
 
                   {/* Package Routes */}
