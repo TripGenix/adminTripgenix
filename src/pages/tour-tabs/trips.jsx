@@ -1,11 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewTours from "./NewTours";
 import ConfirmedTours from "./ConfirmedTours";
-import OngoingTours from "./OngoingTours";
 import CancelledTours from "./CancelledTours";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
 import AllTours from "./AllTours";
 import DriverConfirmed from "./DriverConfirmed";
+import StartedTours from "./StartedTours";
+import FinishedTours from "./FinishedTours";
 
 export default function Trips() {
   return (
@@ -47,7 +48,7 @@ export default function Trips() {
 
          
           <TabsTrigger
-            value="in-progress"
+            value="ongoing"
             className="w-full text-indigo-600 data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
           >
             In Progress
@@ -86,7 +87,11 @@ export default function Trips() {
           </TabsContent>
 
           <TabsContent value="ongoing">
-            <OngoingTours />
+            <StartedTours />
+          </TabsContent>
+
+          <TabsContent value="finished">
+            <FinishedTours />
           </TabsContent>
 
           <TabsContent value="cancelled">

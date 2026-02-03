@@ -3,13 +3,13 @@ import {
   Search,
   Calendar,
   Eye,
-  MailX,
+  MailCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import bookingApi from "../../api/ToursApi";
 import { Client } from "@stomp/stompjs";
 
-export default function CancelledTours() {
+function StartedTours() {
   const navigate = useNavigate();
 
   const [searchRef, setSearchRef] = useState("");
@@ -20,10 +20,10 @@ export default function CancelledTours() {
   const [loading, setLoading] = useState(false);
 
   /* =============================
-     LOAD CANCELLED TOURS
+     LOAD STARTED TOURS
   ============================= */
   useEffect(() => {
-    loadCancelledTours();
+    loadStartedTours();
   }, []);
 
   /* =============================
@@ -35,28 +35,29 @@ export default function CancelledTours() {
       reconnectDelay: 5000,
 
       onConnect: () => {
-        console.log("❌ CancelledTours WebSocket connected");
+        console.log("✅ StartedTours WebSocket connected");
 
-        client.subscribe("/topic/tour-cancelled", () => {
-          loadCancelledTours();
+        client.subscribe("/topic/tour-started", () => {
+          loadStartedTours();
         });
       },
     });
 
     client.activate();
+
     return () => client.deactivate();
   }, []);
 
-  const loadCancelledTours = () => {
+  const loadStartedTours = () => {
     setLoading(true);
     bookingApi
-      .getCancelledTours()
+      .getStartedTours()
       .then((res) => {
         setTours(res.data);
         setFilteredTours(res.data);
       })
       .catch((err) => {
-        console.error("Failed to load cancelled tours", err);
+        console.error("Failed to load started tours", err);
       })
       .finally(() => setLoading(false));
   };
@@ -102,7 +103,7 @@ export default function CancelledTours() {
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-gray-900">
-          Cancelled Tours
+          Started Tours
         </h2>
       </div>
 
@@ -141,7 +142,7 @@ export default function CancelledTours() {
 
         <button
           onClick={handleSearch}
-          className="bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2"
         >
           <Search size={18} />
           Search
@@ -181,7 +182,7 @@ export default function CancelledTours() {
               ) : filteredTours.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center py-8 text-gray-500">
-                    No cancelled tours
+                    No started tours
                   </td>
                 </tr>
               ) : (
@@ -190,7 +191,7 @@ export default function CancelledTours() {
                     key={tour.bookingId}
                     className="border-t hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 font-medium text-red-600">
+                    <td className="px-4 py-3 font-medium text-blue-600">
                       {tour.referenceId}
                     </td>
                     <td className="px-4 py-3">{tour.bookerName}</td>
@@ -201,12 +202,12 @@ export default function CancelledTours() {
                       {tour.startDate?.substring(0, 10)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                        CANCELLED
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                        STARTED
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <MailX size={18} className="text-red-600 mx-auto" />
+                      <MailCheck size={18} className="text-green-600 mx-auto" />
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button
@@ -228,3 +229,5 @@ export default function CancelledTours() {
     </div>
   );
 }
+
+export default StartedTours;
