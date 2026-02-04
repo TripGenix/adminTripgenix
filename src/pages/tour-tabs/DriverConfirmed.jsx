@@ -26,13 +26,13 @@ export default function DriverConfirmed() {
   ============================= */
   useEffect(() => {
     const client = new Client({
-      brokerURL: "ws://localhost:8087/ws",
+      brokerURL: "ws://localhost:8081/ws",
       reconnectDelay: 5000,
 
       onConnect: () => {
         console.log("✅ DriverConfirmed WebSocket connected");
 
-        client.subscribe("/topic/driver-confirmed", () => {
+        client.subscribe("/topic/driver-confirm", () => {
           loadDriverConfirmedTours();
         });
       },
@@ -111,7 +111,7 @@ export default function DriverConfirmed() {
 
       {/* FILTERS */}
       <div className="bg-white p-5 rounded-xl shadow-sm border grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="relative">
+        <div className="relative ">
           <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
           <input
             type="text"
@@ -122,7 +122,7 @@ export default function DriverConfirmed() {
           />
         </div>
 
-        <div className="relative">
+        <div className="relative ">
           <Calendar className="absolute left-3 top-3.5 text-gray-400" size={18} />
           <input
             type="date"
@@ -144,7 +144,7 @@ export default function DriverConfirmed() {
 
         <button
           onClick={handleSearch}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2"
+          className="bg-yellow-500 text-white rounded-lg flex items-center justify-center gap-2"
         >
           <Search size={18} />
           Search
@@ -193,7 +193,7 @@ export default function DriverConfirmed() {
                     key={tour.bookingId}
                     className="border-t hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 font-medium text-blue-600">
+                    <td className="px-4 py-3 font-medium text-yellow-500">
                       {tour.referenceId}
                     </td>
                     <td className="px-4 py-3">{tour.bookerName}</td>

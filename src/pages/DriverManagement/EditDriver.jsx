@@ -117,9 +117,7 @@ export default function EditDriver() {
     loadSupportingData();
   }, []);
 
-  // ------------------ LOAD DRIVER ------------------
-  useEffect(() => {
-    async function loadDriver() {
+   async function loadDriver() {
       try {
         const res = await driverApi.getDriverById(id);
         const d = res.data;
@@ -155,7 +153,8 @@ export default function EditDriver() {
         setLoading(false);
       }
     }
-
+  // ------------------ LOAD DRIVER ------------------
+  useEffect(() => {
     loadDriver();
   }, [id, form]);
 
@@ -216,6 +215,25 @@ export default function EditDriver() {
           },
         }
       );
+    } catch (err) {
+      console.error(err);
+      toast.error("Unexpected error occurred!");
+    }
+  }
+
+  async function approveDriver() {
+    try {
+      await toast.promise(driverApi.approveDriver(id), {
+        loading: "Approving driver...",
+        success: () => {
+          loadDriver();
+          return "Driver approved successfully!";
+        },
+        error: (err) => {
+          console.error(err);
+          return "Approval failed. Try again.";
+        },
+      });
     } catch (err) {
       console.error(err);
       toast.error("Unexpected error occurred!");
@@ -436,9 +454,10 @@ export default function EditDriver() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Available">Available</SelectItem>
-                        <SelectItem value="Suspended">Suspended</SelectItem>
-                        <SelectItem value="Pending_verification">Pending Verification</SelectItem>
+                        <SelectItem value="AVAILABLE">Available</SelectItem>
+                        <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
+                        <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                        <SelectItem value="PENDING">Pending Verification</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -588,10 +607,20 @@ export default function EditDriver() {
               <Button variant="outline" type="button" onClick={() => goTo("/driver-management")}>
                 Cancel
               </Button>
-
+                {existingDriver.approved ? (
+                  <Button className="bg-green-500 text-white" disabled>
+                    Approved
+                  </Button>
+                ) : (
+                  <Button className="bg-yellow-500 text-white" onClick={approveDriver}>
+                    Approve
+                  </Button>
+                )}
               <Button type="submit" className="bg-blue-700 text-white">
                 Update Driver
               </Button>
+
+            
             </div>
           </form>
         </Form>
