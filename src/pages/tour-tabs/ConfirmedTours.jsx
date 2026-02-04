@@ -37,7 +37,7 @@ export default function ConfirmedTours() {
       onConnect: () => {
         console.log("✅ ConfirmedTours WebSocket connected");
 
-        client.subscribe("/topic/tour-confirmed", () => {
+        client.subscribe("/topic/confirmed-booking", () => {
           loadConfirmedTours();
         });
       },
@@ -142,7 +142,7 @@ export default function ConfirmedTours() {
 
         <button
           onClick={handleSearch}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2"
+          className="bg-green-600  text-white rounded-lg flex items-center justify-center gap-2"
         >
           <Search size={18} />
           Search

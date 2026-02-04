@@ -142,7 +142,7 @@ function StartedTours() {
 
         <button
           onClick={handleSearch}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2"
+          className="bg-indigo-600 text-white rounded-lg flex items-center justify-center gap-2"
         >
           <Search size={18} />
           Search
@@ -191,7 +191,7 @@ function StartedTours() {
                     key={tour.bookingId}
                     className="border-t hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 font-medium text-blue-600">
+                    <td className="px-4 py-3 font-medium text-indigo-600">
                       {tour.referenceId}
                     </td>
                     <td className="px-4 py-3">{tour.bookerName}</td>

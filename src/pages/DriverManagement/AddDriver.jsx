@@ -83,7 +83,7 @@ export default function CreateDriver() {
       city: "",
       stateProvince: "",
       postalCode: "",
-      status: "Active",
+      status: "PENDING",
       licenseFile: null,
       driverImage: null,
       selectedVehicleCategories: [],
