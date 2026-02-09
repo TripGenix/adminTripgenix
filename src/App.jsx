@@ -38,6 +38,7 @@ import UserManagement from "./pages/UserManagement/UserManagement";
 import AddUser from "./pages/UserManagement/AddUser";
 import EditUser from "./pages/UserManagement/EditUser";
 import ViewUser from "./pages/UserManagement/ViewUser";
+import EditTour from "./pages/tour-tabs/EditTour";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -111,20 +112,25 @@ function App() {
                   <Route path="trips">
                     <Route index element={<Trip />} />
                     <Route path="add-new" element={<AddNewTour />} />
-                    <Route path="send-email-view/:id" element={<EmailSendView />} />
+                    <Route
+                      path="send-email-view/:id"
+                      element={<EmailSendView />}
+                    />
                     <Route path="view/:id" element={<ViewTour />} />
-
+                    <Route path="edit/:id" element={<EditTour />} />
                   </Route>
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />
-                  
 
                   {/* User Routes */}
                   <Route path="user-management">
                     <Route index element={<UserManagement />} />
                     <Route path="user-management/add" element={<AddUser />} />
-                    <Route path="user-management/edit/:id" element={<EditUser />} />
+                    <Route
+                      path="user-management/edit/:id"
+                      element={<EditUser />}
+                    />
                     <Route path="view/:id" element={<ViewUser />} />
                   </Route>
 
