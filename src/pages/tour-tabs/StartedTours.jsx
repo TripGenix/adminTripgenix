@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import bookingApi from "../../api/ToursApi";
 import { Client } from "@stomp/stompjs";
 
-export default function ConfirmedTours() {
+function StartedTours() {
   const navigate = useNavigate();
 
   const [searchRef, setSearchRef] = useState("");
@@ -20,10 +20,10 @@ export default function ConfirmedTours() {
   const [loading, setLoading] = useState(false);
 
   /* =============================
-     LOAD CONFIRMED TOURS
+     LOAD STARTED TOURS
   ============================= */
   useEffect(() => {
-    loadConfirmedTours();
+    loadStartedTours();
   }, []);
 
   /* =============================
@@ -35,10 +35,10 @@ export default function ConfirmedTours() {
       reconnectDelay: 5000,
 
       onConnect: () => {
-        console.log("✅ ConfirmedTours WebSocket connected");
+        console.log("✅ StartedTours WebSocket connected");
 
-        client.subscribe("/topic/confirmed-booking", () => {
-          loadConfirmedTours();
+        client.subscribe("/topic/tour-started", () => {
+          loadStartedTours();
         });
       },
     });
@@ -48,16 +48,16 @@ export default function ConfirmedTours() {
     return () => client.deactivate();
   }, []);
 
-  const loadConfirmedTours = () => {
+  const loadStartedTours = () => {
     setLoading(true);
     bookingApi
-      .getConfirmedTours()
+      .getStartedTours()
       .then((res) => {
         setTours(res.data);
         setFilteredTours(res.data);
       })
       .catch((err) => {
-        console.error("Failed to load confirmed tours", err);
+        console.error("Failed to load started tours", err);
       })
       .finally(() => setLoading(false));
   };
@@ -103,7 +103,7 @@ export default function ConfirmedTours() {
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-gray-900">
-          Confirmed Tours
+          Started Tours
         </h2>
       </div>
 
@@ -142,7 +142,7 @@ export default function ConfirmedTours() {
 
         <button
           onClick={handleSearch}
-          className="bg-green-600  text-white rounded-lg flex items-center justify-center gap-2"
+          className="bg-indigo-600 text-white rounded-lg flex items-center justify-center gap-2"
         >
           <Search size={18} />
           Search
@@ -182,7 +182,7 @@ export default function ConfirmedTours() {
               ) : filteredTours.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center py-8 text-gray-500">
-                    No confirmed tours
+                    No started tours
                   </td>
                 </tr>
               ) : (
@@ -191,7 +191,7 @@ export default function ConfirmedTours() {
                     key={tour.bookingId}
                     className="border-t hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 font-medium text-blue-600">
+                    <td className="px-4 py-3 font-medium text-indigo-600">
                       {tour.referenceId}
                     </td>
                     <td className="px-4 py-3">{tour.bookerName}</td>
@@ -202,8 +202,8 @@ export default function ConfirmedTours() {
                       {tour.startDate?.substring(0, 10)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                        CONFIRMED
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                        STARTED
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -229,3 +229,5 @@ export default function ConfirmedTours() {
     </div>
   );
 }
+
+export default StartedTours;

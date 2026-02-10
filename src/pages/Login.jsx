@@ -158,7 +158,7 @@ export default function Login() {
                 <p className="text-center text-slate-600 text-sm mt-6">
                   Don't have an account?{" "}
                   <Link
-                    to="/register"
+                    to="/add-admin"
                     className="text-blue-600 hover:text-blue-700 font-medium"
                   >
                     Create one

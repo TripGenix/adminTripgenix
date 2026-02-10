@@ -218,8 +218,13 @@ const handleDeleteConfirm = async () => {
             >
               Delete
             </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
+            
+          <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => goTo(`view/${row.original.userId}`)}
+            >
+              View
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),

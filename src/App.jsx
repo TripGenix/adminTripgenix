@@ -20,6 +20,8 @@ import AccountSettings from "@/pages/AccountSettings";
 
 import AdminPackagesPage from "@/pages/DefaultPackages/AdminPackagesPage";
 import PackageForm from "@/pages/DefaultPackages/PackageForm";
+import ViewPackages from "@/pages/DefaultPackages/ViewPackages";
+
 import { useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import TourGuideManagement from "./pages/TourGuideManagement/TourGuideManagement";
@@ -30,11 +32,13 @@ import EditTourGuide from "./pages/TourGuideManagement/EditTourGuide";
 import ViewTourGuide from "./pages/TourGuideManagement/ViewTourGuide";
 import AddNewTour from "./pages/tour-tabs/AddNewTour";
 import EmailSendView from "./pages/tour-tabs/emailsendView";
+import ViewTour from "./pages/tour-tabs/viewNewTours";
 
 import UserManagement from "./pages/UserManagement/UserManagement";
 import AddUser from "./pages/UserManagement/AddUser";
 import EditUser from "./pages/UserManagement/EditUser";
-
+import ViewUser from "./pages/UserManagement/ViewUser";
+import EditTour from "./pages/tour-tabs/EditTour";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -98,6 +102,7 @@ function App() {
                     <Route index element={<AdminPackagesPage />} />
                     <Route path="add" element={<PackageForm />} />
                     <Route path="edit/:id" element={<PackageForm />} />
+                    <Route path="view/:id" element={<ViewPackages />} />
                   </Route>
 
                   {/* Trips */}
@@ -107,19 +112,26 @@ function App() {
                   <Route path="trips">
                     <Route index element={<Trip />} />
                     <Route path="add-new" element={<AddNewTour />} />
-                    <Route path="send-email-view/:id" element={<EmailSendView />} />
-
+                    <Route
+                      path="send-email-view/:id"
+                      element={<EmailSendView />}
+                    />
+                    <Route path="view/:id" element={<ViewTour />} />
+                    <Route path="edit/:id" element={<EditTour />} />
                   </Route>
 
                   {/* Default Redirect */}
                   <Route path="/" element={<Navigate to="/trips/new" />} />
 
-
                   {/* User Routes */}
                   <Route path="user-management">
                     <Route index element={<UserManagement />} />
                     <Route path="user-management/add" element={<AddUser />} />
-                    <Route path="user-management/edit/:id" element={<EditUser />} />
+                    <Route
+                      path="user-management/edit/:id"
+                      element={<EditUser />}
+                    />
+                    <Route path="view/:id" element={<ViewUser />} />
                   </Route>
 
                   {/* Catch-all inside layout */}

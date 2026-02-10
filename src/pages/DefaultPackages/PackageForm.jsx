@@ -121,9 +121,9 @@ useEffect(() => {
   
 
   const handleImageUpload = async () => {
-  if (!imageFile) return form.imageUrl || "";
-  const url = await uploadImage(imageFile);
-  return url;
+    if (!imageFile) return form.imageUrl || "";
+    const url = await uploadImage(imageFile);
+    return url;
 };
 
 
@@ -336,7 +336,7 @@ const handleSubmit = async (e) => {
               const file = e.target.files[0];
               if (!file) return;
 
-              setImageFile(file);
+             // setImageFile(file);
               setImagePreview(URL.createObjectURL(file)); // 👈 preview
   }}
           />
