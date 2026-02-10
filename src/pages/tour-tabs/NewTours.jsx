@@ -43,20 +43,20 @@ useEffect(() => {
     debug: (str) => console.log(str),
 
     onConnect: () => {
-      console.log("✅ NewTours WebSocket connected");
+      // console.log("✅ NewTours WebSocket connected");
 
       client.subscribe("/topic/new-tour-add", (message) => {
-        console.log("📢 New tour added:", message.body);
+        // console.log("📢 New tour added:", message.body);
         loadTours(); // 🔥 refresh list
       });
     },
 
     onStompError: (frame) => {
-      console.error("❌ Broker error:", frame.headers["message"]);
+      // console.error("❌ Broker error:", frame.headers["message"]);
     },
 
     onWebSocketClose: () => {
-      console.warn("⚠️ WebSocket connection closed");
+      // console.warn("⚠️ WebSocket connection closed");
     },
   });
 
@@ -64,7 +64,7 @@ useEffect(() => {
 
   return () => {
     client.deactivate();
-    console.log("🔌 NewTours WebSocket disconnected");
+    // console.log("🔌 NewTours WebSocket disconnected");
   };
 }, []);
 
