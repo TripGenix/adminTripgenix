@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DragHandle } from "@/components/data-table";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { toast } from "sonner";
-import tourGuideApi from "@/api/tourGuideApi";
+import tourGuideApi from "@/api/TourGuideApi";
 
 import {
   DropdownMenu,
@@ -159,6 +159,11 @@ function TourGuideManagement() {
     { accessorKey: "nic", header: "NIC" },
     { accessorKey: "language", header: "Language" },
     { accessorKey: "reviewId", header: "Review ID" },
+    {
+      accessorKey: "hourlyRate",
+      header: "Hourly Rate (LKR)",
+      cell: ({ row }) => row.original.hourlyRate ? `${row.original.hourlyRate}` : "N/A"
+    },
 
     {
       header: "Status",

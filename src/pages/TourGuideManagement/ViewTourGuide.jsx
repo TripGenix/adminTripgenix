@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import tourGuideApi from "@/api/tourGuideApi";
+import tourGuideApi from "@/api/TourGuideApi";
 import driverApi from "@/api/DriverApi";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import useNavigator from "@/hooks/use-navigator";
@@ -93,6 +93,10 @@ export default function ViewTourGuide() {
             <Input value={guide.reviewId || "N/A"} disabled />
           </Field>
 
+          <Field label="Hourly Rate">
+            <Input value={guide.hourlyRate ? `${guide.hourlyRate} LKR` : "N/A"} disabled />
+          </Field>
+
           <Field label="Status">
             <Input
               value={
@@ -126,7 +130,7 @@ export default function ViewTourGuide() {
         </div>
 
         <div className="flex justify-end mt-8 gap-3">
-          <Button variant="outline" onClick={() => goTo("/tour-guide-management")}>
+          <Button variant="outline" onClick={() => goTo("/tour-guide")}>
             Back
           </Button>
           <Button className="bg-blue-700 text-white hover:bg-blue-900" onClick={() => goTo(`/tour-guide/edit/${id}`)}>

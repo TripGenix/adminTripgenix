@@ -10,7 +10,7 @@ import uploadToSupabase from "@/utils/uploadImage";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import useNavigator from "@/hooks/use-navigator";
 import driverApi from "@/api/DriverApi";
-import tourGuideApi from "@/api/tourGuideApi";
+import tourGuideApi from "@/api/TourGuideApi";
 
 import {
     Form,
@@ -39,6 +39,7 @@ const schema = z.object({
         })
         .nullable()
         .optional(),
+    hourlyRate: z.coerce.number().min(0, "Rate must be positive"),
 });
 
 export default function EditTourGuide() {
@@ -59,6 +60,7 @@ export default function EditTourGuide() {
             status: true,
             driver: null,
             image: null,
+            hourlyRate: "",
         },
     });
 
@@ -85,7 +87,7 @@ export default function EditTourGuide() {
         async function loadGuide() {
             if (!id) return;
             try {
-                const res = await tourGuideApi.searchGuide(id);
+                const res = await tourGuideApi.getGuideById(id);
                 console.log("Guide fetched:", res.data);
 
                 // Handle different response structures gracefully
@@ -111,6 +113,7 @@ export default function EditTourGuide() {
                             label: guide.driverName || "Associated Driver"
                         } : null,
                         image: null,
+                        hourlyRate: guide.hourlyRate || "",
                     });
                 } else {
                     toast.error("Guide not found");
@@ -141,9 +144,14 @@ export default function EditTourGuide() {
                         language: values.language,
                         reviewId: values.reviewId ?? null,
                         image: imageUrl,
-                        status: values.status,
-                        driver: values.driver ? values.driver.value : null, // Changed from driverId to driver to match AddTourGuide
+                        status: values.status === true,
+                        driver: values.driver
+                            ? values.driver.value
+                            : existingGuide.driver,
+                        hourlyRate: values.hourlyRate,
                     };
+
+
 
                     console.log("Updating payload:", payload);
 
@@ -153,7 +161,7 @@ export default function EditTourGuide() {
                 {
                     loading: "Updating guide...",
                     success: () => {
-                        goTo("/tour-guide-management");
+                        goTo("/tour-guide");
                         return "Guide updated successfully";
                     },
                     error: (err) => {
@@ -213,7 +221,21 @@ export default function EditTourGuide() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Language</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
+                                        <FormControl>
+                                            <Select
+                                                options={[
+                                                    { value: "English", label: "English" },
+                                                    { value: "Sinhala", label: "Sinhala" },
+                                                ]}
+                                                value={
+                                                    field.value
+                                                        ? { value: field.value, label: field.value }
+                                                        : null
+                                                }
+                                                onChange={(opt) => field.onChange(opt ? opt.value : "")}
+                                                placeholder="Select Language"
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -295,6 +317,21 @@ export default function EditTourGuide() {
                                 )}
                             />
 
+                            {/* HOURLY RATE */}
+                            <FormField
+                                name="hourlyRate"
+                                control={form.control}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Hourly Rate (LKR)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             {/* IMAGE */}
                             <FormField
                                 name="image"
@@ -330,7 +367,7 @@ export default function EditTourGuide() {
                         </div>
 
                         <div className="flex justify-end gap-4">
-                            <Button variant="outline" type="button" onClick={() => goTo("/tour-guide-management")}>
+                            <Button variant="outline" type="button" onClick={() => goTo("/tour-guide")}>
                                 Cancel
                             </Button>
 

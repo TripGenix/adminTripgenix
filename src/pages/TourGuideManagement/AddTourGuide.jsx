@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import useNavigator from "@/hooks/use-navigator";
 import Select from "react-select";
 import driverApi from "@/api/DriverApi";
-import tourGuideApi from "@/api/tourGuideApi";
+import tourGuideApi from "@/api/TourGuideApi";
 
 // ---------- schema ----------
 const schema = z.object({
@@ -38,6 +38,7 @@ const schema = z.object({
     })
     .nullable()
     .optional(),
+  hourlyRate: z.coerce.number().min(0, "Rate must be positive"),
 });
 
 export default function AddTourGuide() {
@@ -53,6 +54,7 @@ export default function AddTourGuide() {
       image: null,
       status: true,
       driver: null,
+      hourlyRate: "",
     },
   });
 
@@ -100,6 +102,7 @@ export default function AddTourGuide() {
             image: imageUrl,
             status: values.status,
             driver: values.driver ? values.driver.value : null,
+            hourlyRate: values.hourlyRate,
           };
 
           console.log("Submitting payload:", payload);
@@ -110,7 +113,7 @@ export default function AddTourGuide() {
         {
           loading: "Saving guide...",
           success: () => {
-            goTo("/tour-guide-management");
+            goTo("/tour-guide");
             form.reset();
             return "Tour guide created";
           },
@@ -172,7 +175,22 @@ export default function AddTourGuide() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Language</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormControl>
+                      <Select
+                        options={[
+                          { value: "English", label: "English" },
+                          { value: "Sinhala", label: "Sinhala" },
+                        ]}
+                        value={
+                          field.value
+                            ? { value: field.value, label: field.value }
+                            : null
+                        }
+                        onChange={(opt) => field.onChange(opt ? opt.value : "")}
+                        placeholder="Select Language"
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -245,6 +263,21 @@ export default function AddTourGuide() {
                         getOptionValue={(o) => String(o.value)}
                       />
                     </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* HOURLY RATE */}
+              <FormField
+                name="hourlyRate"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hourly Rate (LKR)</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
