@@ -71,7 +71,15 @@ const bookingApi = {
     `/editBooking/${id}`,
     payload
   );
-}
+},
+
+confirmByTripGenix(id) {
+  return axiosClientTours.post(`/confirm-by-admin/${id}`);
+},
+
+cancleByTripGenix(id) {
+  return axiosClientTours.put(`/cancel-by-admin/${id}`);  
+},
 
 };
 
