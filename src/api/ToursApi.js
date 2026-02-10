@@ -65,6 +65,14 @@ const bookingApi = {
   driverCancel(id) {
     return axiosClientTours.put(`/driver/cancel/${id}`);
   },
+
+  updateBookingById(id, payload) {
+  return axiosClientTours.post(
+    `/editBooking/${id}`,
+    payload
+  );
+}
+
 };
 
 export default bookingApi;

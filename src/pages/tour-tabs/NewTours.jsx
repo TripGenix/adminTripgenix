@@ -255,7 +255,7 @@ useEffect(() => {
                       </button>
                       <button
                         onClick={() =>
-                          navigate(`/tours/edit/${tour.bookingId}`)
+                          navigate(`edit/${tour.bookingId}`)
                         }
                         className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
                       >
