@@ -1,31 +1,22 @@
-import * as React from "react"
+import * as React from "react";
 import {
   ArrowUpCircleIcon,
   BarChartIcon,
-  CameraIcon,
   ClipboardListIcon,
   DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
   FileTextIcon,
-  FolderIcon,
+  CircleDollarSignIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
-  ListIcon,
   SearchIcon,
   SettingsIcon,
   CarTaxiFront,
   Users,
-  UserStar
-  
-  
-} from "lucide-react"
+  UserStar,
+} from "lucide-react";
 
-
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import { useAuthUser } from "@/hooks/use-auth-user";
 import { BiTrip } from "react-icons/bi";
 
@@ -37,10 +28,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { Circle } from "lucide-react";
+
+// ================= NAVIGATION DATA =================
 
 const data = {
-
   navMain: [
     {
       title: "Dashboard",
@@ -63,117 +56,111 @@ const data = {
       icon: Users,
     },
     {
-      title:"Packages",
-      url:"/packages",
-      icon:ClipboardListIcon,
+      title: "Tour Guide",
+      url: "/tour-guide",
+      icon: UserStar,
     },
-
     {
-      title:"Tour Guide",
-      url:"/tour-guide",
-      icon:UserStar,
+      title: "Packages",
+      url: "/packages",
+      icon: ClipboardListIcon,
     },
-
-    {
-      title:"Users",
-      url:"/user-management",
-      icon:DatabaseIcon,
-    }
-    
-    
+    // {
+    //   title: "Users",
+    //   url: "/user-management",
+    //   icon: DatabaseIcon,
+    // },
   ],
-  // navClouds: [
-  //   {
-  //     title: "Capture",
-  //     icon: CameraIcon,
-  //     isActive: true,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Proposal",
-  //     icon: FileTextIcon,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Prompts",
-  //     icon: FileCodeIcon,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  // ],
+
+  navCompany: [
+    {
+      title: "Reports",
+      url: "/reports",
+      icon: BarChartIcon,
+    },
+    {
+      title: "Revenue Analytics",
+      url: "/analytics",
+      icon: ArrowUpCircleIcon,
+    },
+    {
+      title: "Payments",
+      url: "/payments",
+      icon: CircleDollarSignIcon,
+    },
+    {
+      title: "System Users",
+      url: "/user-management",
+      icon: SettingsIcon,
+    },
+  ],
+
   // navSecondary: [
-  //   {
-  //     title: "Settings",
-  //     url: "#",
-  //     icon: SettingsIcon,
-  //   },
-  //   {
-  //     title: "Get Help",
-  //     url: "#",
-  //     icon: HelpCircleIcon,
-  //   },
   //   {
   //     title: "Search",
   //     url: "#",
   //     icon: SearchIcon,
   //   },
+  //   {
+  //     title: "Help",
+  //     url: "#",
+  //     icon: HelpCircleIcon,
+  //   },
   // ],
+};
 
-}
+// ================= SIDEBAR COMPONENT =================
 
-export function AppSidebar({
-  ...props
-}) {
-const user=useAuthUser();
+export function AppSidebar(props) {
+  const user = useAuthUser();
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
+      
+      {/* Header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href="#">
-                <span className="text-base font-semibold">TripGenix</span>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <a href="/dashboard">
+                <span className="text-base font-semibold">
+                  TripGenix
+                </span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
+      {/* Content */}
       <SidebarContent>
+        
+        {/* Main Operations */}
         <NavMain items={data.navMain} />
-        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+
+        {/* Company Section (Admin Only) */}
+        
+          <div className="mt-6 border-t pt-4">
+            <p className="px-4 text-xs font-semibold text-muted-foreground uppercase">
+              Company
+            </p>
+            <NavMain items={data.navCompany} />
+          </div>
+        
+
+        {/* Secondary Section */}
+        {/* <div className="mt-6 border-t pt-4">
+          <NavMain items={data.navSecondary} />
+        </div> */}
+
       </SidebarContent>
+
+      {/* Footer */}
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   );

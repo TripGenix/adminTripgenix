@@ -40,6 +40,10 @@ import EditUser from "./pages/UserManagement/EditUser";
 import ViewUser from "./pages/UserManagement/ViewUser";
 import EditTour from "./pages/tour-tabs/EditTour";
 
+import PaymentHome from "./pages/Payments/PaymentHome";
+import DriverPayments from "./pages/Payments/DriverPayments";
+import VehiclePayments from "./pages/Payments/VehiclePayments";
+
 function App() {
   const { isAuthenticated } = useAuth();
 
@@ -103,6 +107,13 @@ function App() {
                     <Route path="add" element={<PackageForm />} />
                     <Route path="edit/:id" element={<PackageForm />} />
                     <Route path="view/:id" element={<ViewPackages />} />
+                  </Route>
+
+                   <Route path="payments">
+                    <Route index element={<PaymentHome />} />
+                    <Route path="drivers" element={<DriverPayments />} />
+                    <Route path="vehicles" element={<VehiclePayments />} />
+                    
                   </Route>
 
                   {/* Trips */}
