@@ -81,6 +81,10 @@ cancleByTripGenix(id) {
   return axiosClientTours.put(`/cancel-by-admin/${id}`);  
 },
 
+  getPaymentsDetails() {
+    return axiosClientTours.get("/driver-payments");
+  },
+
 };
 
 export default bookingApi;

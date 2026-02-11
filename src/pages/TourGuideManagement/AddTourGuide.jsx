@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import uploadToSupabase from "@/utils/uploadImage";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { toast } from "sonner";
-import tourGuideApi from "@/api/tourGuideApi";
 
 import {
   Form,
@@ -22,21 +21,24 @@ import { Button } from "@/components/ui/button";
 import useNavigator from "@/hooks/use-navigator";
 import Select from "react-select";
 import driverApi from "@/api/DriverApi";
+import tourGuideApi from "@/api/TourGuideApi";
 
-// ------------- VALIDATION -------------
-
+// ---------- schema ----------
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
-  nic: z.string().min(5, "NIC is required"),
-  language: z.string().min(1, "Language is required"),
-  reviewId: z.string().optional(),
-  image: z
-    .instanceof(File, { message: "Image is required" })
-    .refine((f) => f.type.startsWith("image/"), {
-      message: "Only images allowed",
-    }),
-  status: z.string().min(1, "Status required"),
-  driverId: z.number().nullable().optional(),
+  name: z.string().min(1, "Name required"),
+  nic: z.string().optional(),
+  language: z.string().optional(),
+  reviewId: z.coerce.number().optional(),
+  image: z.instanceof(File, { message: "Image required" }),
+  status: z.boolean(),
+  driver: z
+    .object({
+      value: z.number(),
+      label: z.string(),
+    })
+    .nullable()
+    .optional(),
+  hourlyRate: z.coerce.number().min(0, "Rate must be positive"),
 });
 
 export default function AddTourGuide() {
@@ -48,34 +50,40 @@ export default function AddTourGuide() {
       name: "",
       nic: "",
       language: "",
-      reviewId: "",
-      image: undefined,
-      status: "Active",
-      driverId: null,
+      reviewId: undefined,
+      image: null,
+      status: true,
+      driver: null,
+      hourlyRate: "",
     },
   });
 
   const [driverOptions, setDriverOptions] = React.useState([]);
 
+  // ---------- load drivers ----------
   useEffect(() => {
     async function loadDrivers() {
       try {
         const res = await driverApi.getAllDrivers();
         const items = res?.data || [];
-        setDriverOptions(
-          items.map((d) => ({
-            value: d.driverId ?? d.id ?? d.driver_id,
-            label: `${d.firstName || ""} ${d.lastName || ""}`.trim(),
-          }))
-        );
+
+        console.log("Loaded drivers:", items);
+
+        const options = items.map((d) => ({
+          value: Number(d.driverId), // ✅ from your console screenshot
+          label: `${d.firstName} ${d.lastName}`,
+        }));
+
+        setDriverOptions(options);
       } catch (e) {
-        console.error("Failed to load drivers", e);
+        console.error("Driver load failed", e);
       }
     }
 
     loadDrivers();
   }, []);
 
+  // ---------- submit ----------
   async function onSubmit(values) {
     try {
       await toast.promise(
@@ -85,29 +93,34 @@ export default function AddTourGuide() {
             `guide-images/${values.nic || values.name}`
           );
 
+          // ✅ send driver ID only
           const payload = {
             name: values.name,
             nic: values.nic,
             language: values.language,
-            reviewId: values.reviewId ? Number(values.reviewId) : null,
-            status: values.status === "Active",
-            driver: !!values.driverId,
+            reviewId: values.reviewId ?? null,
             image: imageUrl,
+            status: values.status,
+            driver: values.driver ? values.driver.value : null,
+            hourlyRate: values.hourlyRate,
           };
 
-          console.log("FINAL PAYLOAD 👉", payload);
+          console.log("Submitting payload:", payload);
 
           await tourGuideApi.createGuide(payload);
-          return payload;
+          return true;
         })(),
         {
           loading: "Saving guide...",
           success: () => {
-            goTo("/tour-guide-management");
+            goTo("/tour-guide");
             form.reset();
             return "Tour guide created";
           },
-          error: (err) => err?.message || "Save failed",
+          error: (err) => {
+            console.log("SERVER ERROR:", err?.response?.data);
+            return "Save failed";
+          },
         }
       );
     } catch (err) {
@@ -115,6 +128,7 @@ export default function AddTourGuide() {
     }
   }
 
+  // ---------- UI ----------
   return (
     <div className="p-6">
       <PageBreadcrumb
@@ -129,97 +143,51 @@ export default function AddTourGuide() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+              {/* NAME */}
               <FormField
-                control={form.control}
                 name="name"
+                control={form.control}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <FormControl><Input {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* NIC */}
               <FormField
-                control={form.control}
                 name="nic"
+                control={form.control}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>NIC</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
+                    <FormControl><Input {...field} /></FormControl>
                   </FormItem>
                 )}
               />
 
+              {/* LANGUAGE */}
               <FormField
-                control={form.control}
                 name="language"
+                control={form.control}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Language</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="e.g. English, Sinhala" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="reviewId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Review ID</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <FormControl>
-                      <select
-                        className="w-full border rounded-md px-3 py-2"
-                        {...field}
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="driverId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Associate Driver</FormLabel>
-                    <FormControl>
                       <Select
-                        options={driverOptions}
-                        onChange={(s) => field.onChange(s ? s.value : null)}
+                        options={[
+                          { value: "English", label: "English" },
+                          { value: "Sinhala", label: "Sinhala" },
+                        ]}
                         value={
-                          driverOptions.find((o) => o.value === field.value) ||
-                          null
+                          field.value
+                            ? { value: field.value, label: field.value }
+                            : null
                         }
-                        isClearable
+                        onChange={(opt) => field.onChange(opt ? opt.value : "")}
+                        placeholder="Select Language"
                       />
                     </FormControl>
                     <FormMessage />
@@ -227,9 +195,97 @@ export default function AddTourGuide() {
                 )}
               />
 
+              {/* REVIEW ID */}
               <FormField
+                name="reviewId"
                 control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Review ID</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value)
+                          )
+                        }
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* STATUS */}
+              <FormField
+                name="status"
+                control={form.control}
+                render={({ field }) => {
+                  const opts = [
+                    { value: true, label: "Active" },
+                    { value: false, label: "Inactive" },
+                  ];
+                  return (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <Select
+                          options={opts}
+                          value={opts.find(o => o.value === field.value)}
+                          onChange={(opt) => field.onChange(opt.value)}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  );
+                }}
+              />
+
+              {/* ✅ DRIVER — FULLY FIXED */}
+              <FormField
+                name="driver"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Associate Driver</FormLabel>
+                    <FormControl>
+                      <Select
+                        options={driverOptions}
+                        isClearable
+                        value={
+                          driverOptions.find(
+                            (opt) => opt.value === field.value?.value
+                          ) || null
+                        }
+                        onChange={(opt) => field.onChange(opt)}
+                        getOptionValue={(o) => String(o.value)}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* HOURLY RATE */}
+              <FormField
+                name="hourlyRate"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hourly Rate (LKR)</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* IMAGE */}
+              <FormField
                 name="image"
+                control={form.control}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Image</FormLabel>
@@ -251,20 +307,21 @@ export default function AddTourGuide() {
 
             <div className="flex justify-end gap-4">
               <Button
-                variant="outline"
                 type="button"
+                variant="outline"
                 onClick={() => form.reset()}
               >
                 Clear
               </Button>
 
               <Button
-                className="bg-blue-700 text-white hover:bg-blue-900"
                 type="submit"
+                className="bg-blue-700 text-white hover:bg-blue-900"
               >
                 Save Guide
               </Button>
             </div>
+
           </form>
         </Form>
       </div>
