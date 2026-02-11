@@ -1,14 +1,14 @@
-
 import { useEffect, useState } from "react";
 import { DataTable } from "../../components/data-table";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
 
 import { Button } from "@/components/ui/button";
-import { Plus, MoreVerticalIcon, Search } from "lucide-react";
+import { Plus, MoreVerticalIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DragHandle } from "@/components/data-table";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { toast } from "sonner";
+import tourGuideApi from "@/api/TourGuideApi";
 
 import {
   DropdownMenu,
@@ -19,80 +19,104 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import useNavigator from "../../hooks/use-navigator";
-import tourGuideApi from "@/api/tourGuideApi";
-import { Input } from "@/components/ui/input";
 
 function TourGuideManagement() {
   const [guides, setGuides] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedGuideId, setSelectedGuideId] = useState(null);
+  const [selectedGuide, setSelectedGuide] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const goTo = useNavigator();
 
+  // ✅ LOAD ONCE
   useEffect(() => {
-    if (loading) loadGuides();
-  }, [loading]);
+    loadGuides();
+  }, []);
+
+  // async function loadGuides() {
+  //   try {
+  //     const res = await tourGuideApi.getAllGuides();
+  //     console.log("RAW GUIDE RESPONSE:", res.data);
+
+  //     const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
+
+  //     // ✅ NORMALIZE ID FIELD
+  //     const normalized = res.data.map((g) => ({
+  //       ...g,
+  //       guideId: g.tourGuideId,
+  //     }));
+
+  //     setGuides(normalized);
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to load tour guides");
+  //   }
+  // }
+
+  // async function handleDeleteConfirm() {
+  //   if (!selectedGuide) return;
+
+  //   try {
+  //     setIsDeleting(true);
+  //     await tourGuideApi.deleteGuide(selectedGuide.guideId);
+  //     toast.success("Guide deleted");
+
+  //     setDeleteModalOpen(false);
+  //     loadGuides();
+  //   } catch {
+  //     toast.error("Delete failed");
+  //   } finally {
+  //     setIsDeleting(false);
+  //   }
+  // }
 
   async function loadGuides() {
     try {
       const res = await tourGuideApi.getAllGuides();
-      setGuides(res.data);
+      console.log("RAW GUIDE RESPONSE:", res.data);
+
+      const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
+
+      // ✅ FIX: Use consistent ID field - tourGuideId is the primary key
+      const normalized = list.map((g) => ({
+        ...g,
+        guideId: g.tourGuideId || g.tourId || g.guideId, // Fallback chain
+      }));
+
+      setGuides(normalized);
     } catch (err) {
-      console.error("Load error:", err);
-    } finally {
-      setLoading(false);
+      console.error("Load guides error:", err.response?.data || err);
+      toast.error("Failed to load tour guides");
     }
   }
-
-  async function searchGuides(name) {
-    try {
-      const res = await tourGuideApi.searchGuideByName(name);
-      setGuides(res.data ? [res.data] : []);
-    } catch {
-      setGuides([]);
-    }
-  }
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery.trim() === "") {
-        setLoading(true);
-      } else {
-        searchGuides(searchQuery);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
 
   async function handleDeleteConfirm() {
-    setIsDeleting(true);
+    if (!selectedGuide) return;
+
     try {
-      await toast.promise(
-        tourGuideApi.deleteGuide(selectedGuideId),
-        {
-          loading: "Deleting Guide...",
-          success: "Guide deleted successfully!",
-          error: "Delete failed",
-        }
-      );
-      setLoading(true);
+      setIsDeleting(true);
+      console.log("Deleting guide with ID:", selectedGuide.guideId); // Debug log
+      await tourGuideApi.deleteGuide(selectedGuide.guideId);
+      toast.success("Guide deleted");
+
       setDeleteModalOpen(false);
+      loadGuides();
+    } catch (err) {
+      console.error("Delete error:", err.response?.data || err);
+      toast.error(err.response?.data?.message || "Delete failed");
     } finally {
       setIsDeleting(false);
     }
   }
 
+  // ✅ SAFE COLUMNS
   const guideColumns = [
     {
       id: "drag",
       header: () => null,
-      cell: ({ row }) => <DragHandle id={String(row.original.nic ?? "")} />,
+      cell: ({ row }) => <DragHandle id={String(row.original.guideId)} />,
     },
+
     {
       id: "select",
       header: ({ table }) => (
@@ -111,34 +135,42 @@ function TourGuideManagement() {
         />
       ),
     },
+
+    // IMAGE
     {
-      accessorKey: "image",
       header: "Guide",
       cell: ({ row }) => (
         <img
-          src={row.original.image || "/avatar-placeholder.png"}
-          className="w-10 h-10 rounded-full"
+          src={row.original.image || row.original.guideImage}
+          alt="guide"
+          className="w-10 h-10 rounded-full object-cover"
         />
       ),
     },
-    { accessorKey: "name", header: "Full Name" },
+
+    // NAME
+    {
+      header: "Full Name",
+      cell: ({ row }) =>
+        row.original.name ||
+        `${row.original.firstName || ""} ${row.original.lastName || ""}`,
+    },
+
+    { accessorKey: "nic", header: "NIC" },
     { accessorKey: "language", header: "Language" },
     { accessorKey: "reviewId", header: "Review ID" },
     {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) =>
-        row.original.status ? (
-          <span className="text-green-600">Active</span>
-        ) : (
-          <span className="text-red-600">Inactive</span>
-        ),
+      accessorKey: "hourlyRate",
+      header: "Hourly Rate (LKR)",
+      cell: ({ row }) => row.original.hourlyRate ? `${row.original.hourlyRate}` : "N/A"
     },
+
     {
-      accessorKey: "driver",
-      header: "Driver",
-      cell: ({ row }) => (row.original.driver ? "Yes" : "No"),
+      header: "Status",
+      cell: ({ row }) => (row.original.status ? "Active" : "Inactive"),
     },
+
+    // ACTIONS
     {
       id: "actions",
       cell: ({ row }) => (
@@ -148,22 +180,28 @@ function TourGuideManagement() {
               <MoreVerticalIcon />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => goTo(`edit/${row.original.tourGuideId}`)}>
+            <DropdownMenuItem
+              onClick={() => goTo(`view/${row.original.guideId}`)}
+            >
+              View
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => goTo(`edit/${row.original.guideId}`)}
+            >
               Edit
             </DropdownMenuItem>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               onClick={() => {
-                setSelectedGuideId(row.original.tourGuideId);
+                setSelectedGuide(row.original);
                 setDeleteModalOpen(true);
               }}
             >
               Delete
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => goTo(`view/${row.original.tourGuideId}`)}>
-              View
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -176,47 +214,43 @@ function TourGuideManagement() {
       <PageBreadcrumb title="Tour Guide Management" />
 
       <div className="bg-white border rounded-md shadow-2xl">
+        {/* HEADER */}
         <div className="flex px-6 py-3 border-b items-center">
           <h1 className="text-xl font-medium">Tour Guide List</h1>
+
           <Button
-            className="ml-auto bg-blue-700 text-white"
+            className="ml-auto bg-blue-700 text-white hover:bg-blue-950"
             onClick={() => goTo("/tour-guide/add")}
           >
             <Plus /> Add New Guide
           </Button>
         </div>
 
-        <div className="px-6 py-4 border-b flex justify-end">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search by guide name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
+        {/* TABLE */}
         <DataTable
-          key={guides.length}
           columns={guideColumns}
           data={guides}
-          rowIdAccessor="nic"
+          rowIdAccessor="guideId"
         />
       </div>
 
+      {/* DELETE MODAL */}
       <DeleteConfirmModal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
         title="Delete Guide"
-        message="Are you sure?"
+        message="Are you sure you want to delete"
+        itemName={
+          selectedGuide
+            ? selectedGuide.name ||
+            `${selectedGuide.firstName} ${selectedGuide.lastName}`
+            : ""
+        }
       />
     </div>
   );
 }
 
 export default TourGuideManagement;
-

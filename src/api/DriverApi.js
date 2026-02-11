@@ -6,6 +6,10 @@ const driverApi = {
     return axiosClientDrivers.get("");
   },
 
+   getApprovedDrivers() {
+    return axiosClientDrivers.get("/get-approved-drivers");
+  },
+
   // GET DRIVER BY ID
   getDriverById(id) {
     return axiosClientDrivers.get(`/${id}`);
@@ -61,6 +65,9 @@ const driverApi = {
       return res;
     });
   },
+
+
+
 };
 
 export default driverApi;

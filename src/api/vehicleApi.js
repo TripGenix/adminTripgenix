@@ -46,6 +46,10 @@ const vehicleApi = {
 
   getVehicleCategories(){
     return axiosClientCategory.get("");
+  },
+
+  getvehiclePayments(){
+    return axiosClient.get("/vehicle-payments");
   }
 };
 
