@@ -44,6 +44,9 @@ import PaymentHome from "./pages/Payments/PaymentHome";
 import DriverPayments from "./pages/Payments/DriverPayments";
 import VehiclePayments from "./pages/Payments/VehiclePayments";
 
+import ReportPage from "./pages/CompanyReports/ReportPage";
+import EarningReports from "./pages/CompanyReports/EarningReports";
+
 function App() {
   const { isAuthenticated } = useAuth();
 
@@ -109,11 +112,10 @@ function App() {
                     <Route path="view/:id" element={<ViewPackages />} />
                   </Route>
 
-                   <Route path="payments">
+                  <Route path="payments">
                     <Route index element={<PaymentHome />} />
                     <Route path="drivers" element={<DriverPayments />} />
                     <Route path="vehicles" element={<VehiclePayments />} />
-                    
                   </Route>
 
                   {/* Trips */}
@@ -143,6 +145,12 @@ function App() {
                       element={<EditUser />}
                     />
                     <Route path="view/:id" element={<ViewUser />} />
+                  </Route>
+
+                  {/* Reports */}
+                  <Route path="reports">
+                    <Route index element={<ReportPage />} />
+                    <Route path="earnings" element={<EarningReports />} />
                   </Route>
 
                   {/* Catch-all inside layout */}
