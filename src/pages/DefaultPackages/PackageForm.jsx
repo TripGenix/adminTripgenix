@@ -337,7 +337,7 @@ const handleSubmit = async (e) => {
               if (!file) return;
 
               setImageFile(file);
-              setImagePreview(URL.createObjectURL(file)); // 👈 preview
+              setImagePreview(URL.createObjectURL(file)); 
   }}
           />
           </Field>
