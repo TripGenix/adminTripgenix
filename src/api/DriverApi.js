@@ -6,6 +6,10 @@ const driverApi = {
     return axiosClientDrivers.get("");
   },
 
+   getApprovedDrivers() {
+    return axiosClientDrivers.get("/get-approved-drivers");
+  },
+
   // GET DRIVER BY ID
   getDriverById(id) {
     return axiosClientDrivers.get(`/${id}`);
@@ -45,6 +49,25 @@ const driverApi = {
       return res;
     });
   },
+
+  // APPROVE DRIVER
+  approveDriver(id) {
+    return axiosClientDrivers.post(`/approve-driver/${id}`).then((res) => {
+
+      if (typeof res.data === "string" && res.data.toLowerCase().includes("error")) {
+        throw new Error(res.data);
+      }
+
+      if (res.data?.success === false) {
+        throw new Error(res.data.message || "Driver approval failed");
+      }
+
+      return res;
+    });
+  },
+
+
+
 };
 
 export default driverApi;

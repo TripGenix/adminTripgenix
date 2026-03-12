@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import useNavigator from "@/hooks/use-navigator";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import GooglePlaceInput from "@/components/GooglePlaceInput";
 import {
   Form,
   FormField,
@@ -43,6 +43,7 @@ const schema = z.object({
   bookingPrice: z.string().min(1, "Booking price required"),
   status: z.string().min(1, "Status is required"),
   description: z.string().min(1, "Add details about your vehicle"),
+  driverSalaryPerDay: z.string().min(1, "Driver salary per day is required"),
 
   ownerName: z.string().min(1, "Owner name required"),
   ownerId: z.string().min(1, "Owner ID required"),
@@ -52,6 +53,13 @@ const schema = z.object({
   state: z.string().min(1, "State required"),
   postalCode: z.string().min(1, "Postal code required"),
   dob: z.string().min(1, "Date of birth required"),
+  location: z.string().min(1, "Vehicle location is required"),
+  latitude: z.number({
+    required_error: "Latitude is required",
+  }),
+  longitude: z.number({
+    required_error: "Longitude is required",
+  }),
 
   // Multiple Images (must be at least 1)
   vehicleImages: z
@@ -70,9 +78,7 @@ const schema = z.object({
   ownerImage: z.instanceof(File, { message: "Owner image required" }),
 });
 
-// -------------------------------
 // MAIN COMPONENT
-// -------------------------------
 export default function AddVehicle() {
   const goTo = useNavigator();
 
@@ -81,12 +87,13 @@ export default function AddVehicle() {
     defaultValues: {
       vehicleName: "",
       vehicleNumber: "",
-      category: "",
+      category: "select category",
       passengerCount: "",
       costPerKm: "",
       bookingPrice: "",
       status: "Available",
       description: "",
+      driverSalaryPerDay: "",
 
       ownerName: "",
       ownerId: "",
@@ -100,6 +107,9 @@ export default function AddVehicle() {
       vehicleImages: [],
       ownerImage: null,
       documents: null,
+      location: "",
+      latitude: null,
+      longitude: null,
     },
   });
 
@@ -108,13 +118,12 @@ export default function AddVehicle() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await axios.get(
-          "http://localhost:8080/categoryController/api/v1"
-        );
+        const res = await vehicleApi.getVehicleCategories();
         const formatted = res.data.map((item) => ({
           value: item.id,
-          label: item.Category,
+          label: item.category,
         }));
+        console.log(res.data);
         setCategories(formatted);
       } catch (error) {
         console.error("Failed to load categories", error);
@@ -123,9 +132,10 @@ export default function AddVehicle() {
 
     loadCategories();
   }, []);
+
   // SUBMIT LOGIC
   async function onSubmit(values) {
-    console.log("Submitting...", values);
+    // console.log("Submitting...", values);
 
     try {
       await toast.promise(
@@ -133,30 +143,35 @@ export default function AddVehicle() {
           // Upload Vehicle Images
           const uploadedVehicleImages = await Promise.all(
             values.vehicleImages.map((file) =>
-              uploadToSupabase(file, `vehicle-images/${values.vehicleNumber}`)
-            )
+              uploadToSupabase(file, `vehicle-images/${values.vehicleNumber}`),
+            ),
           );
 
           //Upload Owner Image
           const ownerImageUrl = await uploadToSupabase(
             values.ownerImage,
-            `owner-images/${values.vehicleNumber}`
+            `owner-images/${values.vehicleNumber}`,
           );
 
           // Upload Document
           const documentUrl = await uploadToSupabase(
             values.documents,
-            `vehicle-docs/${values.vehicleNumber}`
+            `vehicle-docs/${values.vehicleNumber}`,
           );
 
           // Build payload
           const payload = {
             ...values,
+            passengerCount: Number(values.passengerCount),
+            costPerKm: Number(values.costPerKm),
+            bookingPrice: Number(values.bookingPrice),
+            driverSalaryPerDay: Number(values.driverSalaryPerDay),
             vehicleImages: uploadedVehicleImages,
             ownerImage: ownerImageUrl,
             documentUrl,
           };
 
+          console.log("Payload:", payload);
           return vehicleApi.createVehicle(payload);
         })(),
 
@@ -165,7 +180,7 @@ export default function AddVehicle() {
           success: () => {
             goTo("/Vehicle");
             form.reset();
-            return "Save successful! 👋";
+            return "Save successful!";
           },
           error: (err) => {
             const backendMessage =
@@ -176,7 +191,7 @@ export default function AddVehicle() {
 
             return backendMessage;
           },
-        }
+        },
       );
     } catch (err) {
       console.error("Save failed", err);
@@ -296,6 +311,20 @@ export default function AddVehicle() {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="driverSalaryPerDay"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Driver Salary Per Day (LKR)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="3500" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* VEHICLE IMAGE UPLOADER */}
               <FormField
                 control={form.control}
@@ -309,6 +338,26 @@ export default function AddVehicle() {
                       setImages={(imgs) => field.onChange(imgs)}
                     />
 
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Location</FormLabel>
+                    <FormControl>
+                      <GooglePlaceInput
+                        value={field.value}
+                        onChange={(data) => {
+                          form.setValue("location", data.location);
+                          form.setValue("latitude", data.latitude);
+                          form.setValue("longitude", data.longitude);
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -511,7 +560,6 @@ export default function AddVehicle() {
                           value={field.value || ""}
                           onChange={(e) => field.onChange(e.target.value)}
                         />
-                        <CalendarIcon className="absolute right-3 top-3 h-4 w-4 opacity-50" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -527,25 +575,17 @@ export default function AddVehicle() {
                   <FormItem>
                     <FormLabel>Owner Image</FormLabel>
                     <FormControl>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                        type="button"
-                        onClick={() =>
-                          document.getElementById("ownerImageInput").click()
-                        }
-                      >
-                        <Upload className="mr-2" /> Upload Image
-                      </Button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => field.onChange(e.target.files[0])}
+                        className="block w-full text-sm
+                     file:mr-4 file:py-2 file:px-4
+                     file:rounded file:border-0
+                     file:bg-primary file:text-primary-foreground
+                     hover:file:bg-primary/90"
+                      />
                     </FormControl>
-
-                    <input
-                      id="ownerImageInput"
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => field.onChange(e.target.files[0])}
-                    />
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -557,7 +597,38 @@ export default function AddVehicle() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => form.reset()}
+                onClick={() => {
+                  form.reset({
+                    vehicleName: "",
+                    vehicleNumber: "",
+                    category: "",
+                    passengerCount: "",
+                    costPerKm: "",
+                    bookingPrice: "",
+                    driverSalaryPerDay: "",
+                    status: "Available",
+                    description: "",
+
+                    ownerName: "",
+                    ownerId: "",
+                    phone: "",
+                    address1: "",
+                    address2: "",
+                    state: "",
+                    postalCode: "",
+                    dob: "",
+
+                    vehicleImages: [],
+                    ownerImage: null,
+                    documents: null,
+
+                    location: "",
+                    latitude: null,
+                    longitude: null,
+                  });
+
+                  form.clearErrors();
+                }}
               >
                 Clear
               </Button>

@@ -11,7 +11,7 @@ import uploadToSupabase from "@/utils/uploadImage";
 import ImageUploader from "@/components/ImageUploder";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import useNavigator from "@/hooks/use-navigator";
-
+import GooglePlaceInput from "@/components/GooglePlaceInput";
 import {
   Form,
   FormField,
@@ -45,8 +45,13 @@ const editSchema = z.object({
   passengerCount: z.string().min(1),
   costPerKm: z.string().min(1),
   bookingPrice: z.string().min(1),
+  driverSalaryPerDay: z.string().min(1),
   status: z.string().min(1),
   description: z.string().min(1),
+
+  location: z.string().min(1, "Location is required"),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
 
   ownerName: z.string().min(1),
   ownerId: z.string().min(1),
@@ -84,6 +89,7 @@ export default function EditVehicle() {
       bookingPrice: "",
       status: "",
       description: "",
+      driverSalaryPerDay: "",
 
       ownerName: "",
       ownerId: "",
@@ -93,6 +99,9 @@ export default function EditVehicle() {
       state: "",
       postalCode: "",
       dob: "",
+      location: "",
+      latitude: null,
+      longitude: null,
 
       vehicleImages: [],
       ownerImage: null,
@@ -106,13 +115,11 @@ export default function EditVehicle() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await axios.get(
-          "http://localhost:8080/categoryController/api/v1"
-        );
+        const res = await vehicleApi.getVehicleCategories();
 
         const formatted = res.data.map((item) => ({
           value: item.id,
-          label: item.Category,
+          label: item.category,
         }));
 
         setCategories(formatted);
@@ -124,9 +131,7 @@ export default function EditVehicle() {
     loadCategories();
   }, []);
 
-  // -----------------------------
   // Load Vehicle
-  // -----------------------------
   useEffect(() => {
     async function loadVehicle() {
       try {
@@ -142,8 +147,12 @@ export default function EditVehicle() {
           passengerCount: String(v.passengerCount),
           costPerKm: String(v.costPerKm),
           bookingPrice: String(v.bookingPrice),
+          driverSalaryPerDay: String(v.driverSalaryPerDay),
           status: v.status,
           description: v.description,
+          location: v.location,
+          latitude: v.latitude,
+          longitude: v.longitude,
 
           ownerName: v.owner.name,
           ownerId: v.owner.nic,
@@ -158,7 +167,7 @@ export default function EditVehicle() {
           ownerImage: null,
           documents: null,
         });
-
+        // console.log(v);
         setLoading(false);
       } catch {
         toast.error("Failed to load vehicle.");
@@ -169,18 +178,14 @@ export default function EditVehicle() {
     loadVehicle();
   }, [id]);
 
-  // -----------------------------
   // Auto select category
-  // -----------------------------
   useEffect(() => {
     if (existingVehicle && categories.length > 0) {
       form.setValue("category", Number(existingVehicle.type));
     }
   }, [categories, existingVehicle]);
 
-  // -----------------------------
   // Submit Update
-  // -----------------------------
   async function onSubmit(values) {
     if (!existingVehicle) return;
 
@@ -193,23 +198,23 @@ export default function EditVehicle() {
                   values.vehicleImages.map((file) =>
                     uploadToSupabase(
                       file,
-                      `vehicle-images/${values.vehicleNumber}`
-                    )
-                  )
+                      `vehicle-images/${values.vehicleNumber}`,
+                    ),
+                  ),
                 )
               : existingVehicle.vehicleImages;
 
           const newOwnerImage = values.ownerImage
             ? await uploadToSupabase(
                 values.ownerImage,
-                `owner-images/${values.vehicleNumber}`
+                `owner-images/${values.vehicleNumber}`,
               )
             : existingVehicle.owner.ownerImage;
 
           const newDocumentUrl = values.documents
             ? await uploadToSupabase(
                 values.documents,
-                `vehicle-docs/${values.vehicleNumber}`
+                `vehicle-docs/${values.vehicleNumber}`,
               )
             : existingVehicle.documentUrl;
 
@@ -219,10 +224,13 @@ export default function EditVehicle() {
             passengerCount: Number(values.passengerCount),
             costPerKm: Number(values.costPerKm),
             bookingPrice: Number(values.bookingPrice),
+            driverSalaryPerDay: Number(values.driverSalaryPerDay),
             vehicleImages: newVehicleImages,
             ownerImage: newOwnerImage,
             documentUrl: newDocumentUrl,
           };
+
+          console.log(payload);
 
           return vehicleApi.updateVehicle(id, payload);
         })(),
@@ -231,7 +239,7 @@ export default function EditVehicle() {
           loading: "Updating vehicle...",
           success: "Vehicle updated successfully!",
           error: "Update failed. Try again.",
-        }
+        },
       );
 
       goTo("/vehicle");
@@ -247,7 +255,7 @@ export default function EditVehicle() {
   // -----------------------------
   return (
     <div className="p-6">
-      <PageBreadcrumb title="Edit Vehicle" paths={["Vehicle Management"]} />
+      <PageBreadcrumb title="Edit Vehicle" paths={["Vehicle Management",""]} />
 
       <div className="bg-white border rounded-md shadow p-6">
         <h2 className="text-xl font-semibold mb-4">Vehicle Details</h2>
@@ -360,7 +368,22 @@ export default function EditVehicle() {
                   </FormItem>
                 )}
               />
+
+               <FormField
+              control={form.control}
+              name="driverSalaryPerDay"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Driver Salary Per Day (LKR)</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
+           
 
             {/* EXISTING IMAGES */}
             <div className="w-full md:w-6/12">
@@ -388,6 +411,27 @@ export default function EditVehicle() {
                       images={field.value}
                       setImages={(imgs) => field.onChange(imgs)}
                     />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Location</FormLabel>
+                    <FormControl>
+                      <GooglePlaceInput
+                        value={field.value}
+                        onChange={(data) => {
+                          form.setValue("location", data.location);
+                          form.setValue("latitude", data.latitude);
+                          form.setValue("longitude", data.longitude);
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -1,12 +1,16 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewTours from "./NewTours";
 import ConfirmedTours from "./ConfirmedTours";
-import OngoingTours from "./OngoingTours";
 import CancelledTours from "./CancelledTours";
 import PageBreadcrumb from "../../components/common/PageBreadcrumb";
+import AllTours from "./AllTours";
+import DriverConfirmed from "./DriverConfirmed";
+import StartedTours from "./StartedTours";
+import FinishedTours from "./FinishedTours";
 
 export default function Trips() {
   return (
+    
     <div className="p-1">
       <PageBreadcrumb title="Tours" />
 
@@ -27,22 +31,24 @@ export default function Trips() {
             New Tours
           </TabsTrigger>
 
-          <TabsTrigger
-            value="passenger-confirmed"
-            className="w-full text-green-600  data-[state=active]:bg-green-600 data-[state=active]:text-white"
-          >
-            Passenger Confirmed
-          </TabsTrigger>
-
-          <TabsTrigger
+           <TabsTrigger
             value="driver-pending"
             className="w-full text-yellow-500 data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
           >
-            Driver Pending
+            Driver Confirmed
           </TabsTrigger>
 
+
           <TabsTrigger
-            value="in-progress"
+            value="tourist-confirmed"
+            className="w-full text-green-600  data-[state=active]:bg-green-600 data-[state=active]:text-white"
+          >
+            Tourist Confirmed
+          </TabsTrigger>
+
+         
+          <TabsTrigger
+            value="ongoing"
             className="w-full text-indigo-600 data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
           >
             In Progress
@@ -65,16 +71,27 @@ export default function Trips() {
 
         {/* ================= TAB CONTENT ================= */}
         <div className="bg-white border rounded-md shadow-2xl md:pb-3 p-4">
+          <TabsContent value="all">
+            <AllTours />
+          </TabsContent>
           <TabsContent value="new">
             <NewTours />
           </TabsContent>
 
-          <TabsContent value="confirmed">
+          <TabsContent value="tourist-confirmed">
             <ConfirmedTours />
           </TabsContent>
 
+          <TabsContent value="driver-pending">
+            <DriverConfirmed />
+          </TabsContent>
+
           <TabsContent value="ongoing">
-            <OngoingTours />
+            <StartedTours />
+          </TabsContent>
+
+          <TabsContent value="finished">
+            <FinishedTours />
           </TabsContent>
 
           <TabsContent value="cancelled">

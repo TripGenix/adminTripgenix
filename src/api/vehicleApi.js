@@ -1,4 +1,5 @@
 import axiosClient from "./axioClients/axiosClientVehicle";
+import axiosClientCategory from "./axioClients/axiosClientCategory";
 
 const vehicleApi = {
   getAllVehicles() {
@@ -26,18 +27,30 @@ const vehicleApi = {
   },
 
   updateVehicle(id, payload) {
-  return axiosClient.put(`/update/${id}`, payload).then((res) => {
-    if (typeof res.data === "string" && res.data.includes("error")) {
-      throw new Error(res.data);
-    }
+    return axiosClient.put(`/update/${id}`, payload).then((res) => {
+      if (typeof res.data === "string" && res.data.includes("error")) {
+        throw new Error(res.data);
+      }
 
-    if (res.data?.success === false) {
-      throw new Error(res.data.message || "Update failed");
-    }
+      if (res.data?.success === false) {
+        throw new Error(res.data.message || "Update failed");
+      }
 
-    return res;
-  });
-},
+      return res;
+    });
+  },
+
+  getVehicleNumbers(){
+    return axiosClient.get("/getallvehicles");
+  },
+
+  getVehicleCategories(){
+    return axiosClientCategory.get("");
+  },
+
+  getvehiclePayments(){
+    return axiosClient.get("/vehicle-payments");
+  }
 };
 
 export default vehicleApi;

@@ -36,7 +36,7 @@ export default function DriverManagement() {
       loadDrivers();
       setLoading(false);
     }
-  }, [loading]);
+  }, [loading, isDeleting]);
 
   async function loadDrivers() {
     try {
@@ -158,11 +158,11 @@ export default function DriverManagement() {
     { accessorKey: "status", header: "Status" },
 
     // APPROVAL STATUS
-    {
-      accessorKey: "isApproved",
-      header: "Approved",
-      cell: ({ row }) => (row.original.isApproved ? "Approved" : "Pending"),
-    },
+    // {
+    //   accessorKey: "isApproved",
+    //   header: "Approved",
+    //   cell: ({ row }) => (row.original.isApproved ? "Approved" : "Pending"),
+    // },
 
     // CREATED DATE
 
@@ -198,7 +198,7 @@ export default function DriverManagement() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() => alert("Driver: " + row.original.firstName)}
+              onClick={() => goTo(`view/${row.original.driverId}`)}
             >
               View
             </DropdownMenuItem>
@@ -218,9 +218,9 @@ export default function DriverManagement() {
           <h1 className="text-xl font-medium w-full md:w-auto">Drivers List</h1>
 
           <div className="ml-auto flex flex-col md:flex-row gap-3">
-            <Button variant="outline" className="border border-black" size="lg">
+            {/* <Button variant="outline" className="border border-black" size="lg">
               <Download /> Export
-            </Button>
+            </Button> */}
 
             <Button
               className="bg-blue-700 text-white hover:bg-blue-950"
@@ -238,6 +238,23 @@ export default function DriverManagement() {
           columns={driverColumns}
           data={drivers}
           rowIdAccessor="driverId"
+          rowClassName={(row) => {
+            const status = row.original.status?.toUpperCase();
+
+            if (status === "SUSPENDED") {
+              return "!bg-red-50 [&>td]:!bg-red-50 text-red-800 hover:[&>td]:!bg-red-100";
+            }
+
+            if (status === "PENDING_VERIFICATION") {
+              return "!bg-yellow-50 [&>td]:!bg-yellow-50 text-yellow-800 hover:[&>td]:!bg-yellow-100";
+            }
+
+            if (status === "AVAILABLE") {
+              return "hover:bg-muted/50";
+            }
+
+            return "";
+          }}
         />
       </div>
 

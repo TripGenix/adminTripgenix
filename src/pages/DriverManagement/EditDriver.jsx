@@ -18,13 +18,21 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, Upload } from "lucide-react";
 
-import Select from "react-select";
+import ReactSelect from "react-select";
 import axios from "axios";
+import vehicleApi from "@/api/vehicleApi";
 
 // ------------------ VALIDATION ------------------
 const editSchema = z.object({
@@ -86,19 +94,15 @@ export default function EditDriver() {
   useEffect(() => {
     async function loadSupportingData() {
       try {
-        const resCategory = await axios.get(
-          "http://localhost:8080/categoryController/api/v1"
-        );
+        const resCategory = await vehicleApi.getVehicleCategories();
         setCategoryOptions(
           resCategory.data.map((item) => ({
             value: item.id,
-            label: item.Category,
+            label: item.category,
           }))
         );
 
-        const resVehicles = await axios.get(
-          "http://localhost:8080/vehicleController/api/v1/getallvehicles"
-        );
+        const resVehicles = await vehicleApi.getVehicleNumbers();
         setVehicleOptions(
           resVehicles.data.map((item) => ({
             value: item.vehicleId,
@@ -113,9 +117,7 @@ export default function EditDriver() {
     loadSupportingData();
   }, []);
 
-  // ------------------ LOAD DRIVER ------------------
-  useEffect(() => {
-    async function loadDriver() {
+   async function loadDriver() {
       try {
         const res = await driverApi.getDriverById(id);
         const d = res.data;
@@ -151,7 +153,8 @@ export default function EditDriver() {
         setLoading(false);
       }
     }
-
+  // ------------------ LOAD DRIVER ------------------
+  useEffect(() => {
     loadDriver();
   }, [id, form]);
 
@@ -212,6 +215,25 @@ export default function EditDriver() {
           },
         }
       );
+    } catch (err) {
+      console.error(err);
+      toast.error("Unexpected error occurred!");
+    }
+  }
+
+  async function approveDriver() {
+    try {
+      await toast.promise(driverApi.approveDriver(id), {
+        loading: "Approving driver...",
+        success: () => {
+          loadDriver();
+          return "Driver approved successfully!";
+        },
+        error: (err) => {
+          console.error(err);
+          return "Approval failed. Try again.";
+        },
+      });
     } catch (err) {
       console.error(err);
       toast.error("Unexpected error occurred!");
@@ -416,15 +438,28 @@ export default function EditDriver() {
               />
 
               {/* STATUS */}
-              <FormField
+               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Active / Inactive" />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="AVAILABLE">Available</SelectItem>
+                        <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
+                        <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                        <SelectItem value="PENDING">Pending Verification</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -524,7 +559,7 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Allocate Vehicle By Category</FormLabel>
                     <FormControl>
-                      <Select
+                      <ReactSelect
                         isMulti
                         options={categoryOptions}
                         value={categoryOptions.filter((opt) =>
@@ -549,7 +584,7 @@ export default function EditDriver() {
                   <FormItem>
                     <FormLabel>Allocate Vehicle By Number</FormLabel>
                     <FormControl>
-                      <Select
+                      <ReactSelect
                         isMulti
                         options={vehicleOptions}
                         value={vehicleOptions.filter((opt) =>
@@ -572,10 +607,20 @@ export default function EditDriver() {
               <Button variant="outline" type="button" onClick={() => goTo("/driver-management")}>
                 Cancel
               </Button>
-
+                {existingDriver.approved ? (
+                  <Button className="bg-green-500 text-white" disabled>
+                    Approved
+                  </Button>
+                ) : (
+                  <Button className="bg-yellow-500 text-white" onClick={approveDriver}>
+                    Approve
+                  </Button>
+                )}
               <Button type="submit" className="bg-blue-700 text-white">
                 Update Driver
               </Button>
+
+            
             </div>
           </form>
         </Form>

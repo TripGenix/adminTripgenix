@@ -130,3 +130,33 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Make calendar full width */
+.custom-calendar {
+  width: 100% !important;
+  border: none;
+  font-family: inherit;
+}
+
+/* Make navigation bigger */
+.custom-calendar .react-calendar__navigation {
+  margin-bottom: 20px;
+}
+
+.custom-calendar .react-calendar__tile {
+  height: 80px;
+  font-size: 14px;
+}
+
+/* Improve hover effect */
+.custom-calendar .react-calendar__tile:hover {
+  background: #e0f2fe;
+  border-radius: 12px;
+}
+
+/* Make active day rounded */
+.custom-calendar .react-calendar__tile--active {
+  background: #3b82f6 !important;
+  border-radius: 12px;
+  color: white;
+}
