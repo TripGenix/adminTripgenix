@@ -46,6 +46,7 @@ import VehiclePayments from "./pages/Payments/VehiclePayments";
 
 import ReportPage from "./pages/CompanyReports/ReportPage";
 import EarningReports from "./pages/CompanyReports/EarningReports";
+import TourReports from "./pages/CompanyReports/TourReports";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -151,6 +152,7 @@ function App() {
                   <Route path="reports">
                     <Route index element={<ReportPage />} />
                     <Route path="earnings" element={<EarningReports />} />
+                     <Route path="toursreport" element={<TourReports />} />
                   </Route>
 
                   {/* Catch-all inside layout */}

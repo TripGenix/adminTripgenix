@@ -15,26 +15,26 @@ function ReportPage() {
       title: "Tour Report",
       description: "View all tours, bookings and tour statistics",
       color: "bg-blue-600",
-      path: "/reports/tours",
+      path: "/reports/toursreport",
     },
-    {
-      title: "New Registered Drivers",
-      description: "View newly registered drivers in the system",
-      color: "bg-green-600",
-      path: "/reports/drivers",
-    },
-    {
-      title: "New Added Vehicles",
-      description: "View vehicles recently added to the system",
-      color: "bg-purple-600",
-      path: "/reports/vehicles",
-    },
-     {
-      title: "New Added Tour Guides",
-      description: "View newly added tour guides in the system",
-      color: "bg-yellow-600",
-      path: "/reports/tour-guides",
-    },
+    // {
+    //   title: "New Registered Drivers",
+    //   description: "View newly registered drivers in the system",
+    //   color: "bg-green-600",
+    //   path: "/reports/drivers",
+    // },
+    // {
+    //   title: "New Added Vehicles",
+    //   description: "View vehicles recently added to the system",
+    //   color: "bg-purple-600",
+    //   path: "/reports/vehicles",
+    // },
+    //  {
+    //   title: "New Added Tour Guides",
+    //   description: "View newly added tour guides in the system",
+    //   color: "bg-yellow-600",
+    //   path: "/reports/tour-guides",
+    // },
    
   ];
 

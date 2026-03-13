@@ -1,54 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-function EarningReports() {
+function TourReports() {
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [earnings, setEarnings] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const API = "http://localhost:8095/api/v1/reportgenerate/earnings";
+  const API = "http://localhost:8095/api/v1/reportgenerate/tours";
 
-  /* ======================
-     LOAD ALL DATA ON PAGE LOAD
-  ====================== */
+  /* ============================
+     LOAD ALL TOURS
+  ============================ */
 
   useEffect(() => {
-    fetchAllEarnings();
+    fetchAllTours();
   }, []);
 
-  const fetchAllEarnings = async () => {
+  const fetchAllTours = async () => {
+
     try {
 
       setLoading(true);
 
       const res = await axios.get(API);
 
-      console.log("All earnings:", res.data);
-
-      const data = res.data.data || [];
-
-      setEarnings(data);
-      setTotal(res.data.totalEarnings || 0);
+      setTours(res.data || []);
 
     } catch (err) {
-      console.error("Load error:", err);
+      console.error("Tour load error:", err);
     } finally {
       setLoading(false);
     }
+
   };
 
-  /* ======================
+  /* ============================
      FILTER BY DATE
-  ====================== */
+  ============================ */
 
-  const fetchReport = async () => {
+  const generateReport = async () => {
 
     if (!fromDate || !toDate) {
       alert("Please select date range");
@@ -66,29 +62,23 @@ function EarningReports() {
         }
       });
 
-      console.log("Filtered report:", res.data);
-
-      const data = res.data.data || [];
-
-      setEarnings(data);
-      setTotal(res.data.totalEarnings || 0);
+      setTours(res.data || []);
 
     } catch (err) {
       console.error("Report load error:", err);
-      alert("Failed to load report");
     } finally {
       setLoading(false);
     }
 
   };
 
-  /* ======================
+  /* ============================
      EXPORT PDF
-  ====================== */
+  ============================ */
 
   const exportPDF = () => {
 
-  if (earnings.length === 0) return;
+  if (tours.length === 0) return;
 
   const doc = new jsPDF();
 
@@ -98,7 +88,7 @@ function EarningReports() {
   doc.text("TripGenix", 14, 15);
 
   doc.setFontSize(12);
-  doc.text("Earnings Report", 14, 22);
+  doc.text("Tour Report", 14, 22);
 
   doc.setFontSize(10);
 
@@ -110,19 +100,34 @@ function EarningReports() {
     doc.text(`Date Range: ${fromDate} - ${toDate}`, 14, 28);
   }
 
-  /* ===== TABLE ===== */
+  /* ===== TABLE DATA ===== */
 
-  const tableData = earnings.map((item) => [
-    item.paymentDateTime
-      ? new Date(item.paymentDateTime).toLocaleDateString()
-      : "-",
-    `LKR ${Number(item.amount).toLocaleString()}`
+  const tableData = tours.map((t) => [
+    t.referenceid || t.referenceId,
+    t.touristname || t.touristName,
+    new Date(t.startdate || t.startDate).toLocaleDateString(),
+    new Date(t.enddate || t.endDate).toLocaleDateString(),
+    t.drivername || t.driverName || "-",
+    t.vehiclename || t.vehicleName || "-",
+    t.packagename || t.packageName || "-",
+    `LKR ${Number(t.cost).toLocaleString()}`
   ]);
+
+  /* ===== TABLE ===== */
 
   autoTable(doc, {
     startY: 35,
 
-    head: [["Payment Date", "Amount"]],
+    head: [[
+      "Reference",
+      "Tourist",
+      "Start Date",
+      "End Date",
+      "Driver",
+      "Vehicle",
+      "Package",
+      "Cost"
+    ]],
 
     body: tableData,
 
@@ -139,19 +144,18 @@ function EarningReports() {
     },
 
     styles: {
-      fontSize: 10
+      fontSize: 9
     }
   });
 
-  /* ===== TOTAL ===== */
+  /* ===== SUMMARY ===== */
 
   const finalY = doc.lastAutoTable.finalY + 10;
 
   doc.setFontSize(12);
-  doc.setTextColor(40);
 
   doc.text(
-    `Total Earnings: LKR ${Number(total).toLocaleString()}`,
+    `Total Tours: ${tours.length}`,
     14,
     finalY
   );
@@ -167,28 +171,32 @@ function EarningReports() {
     pageHeight - 10
   );
 
-  doc.save("tripgenix-earnings-report.pdf");
+  doc.save("tripgenix-tour-report.pdf");
 };
 
-  /* ======================
+  /* ============================
      EXPORT EXCEL
-  ====================== */
+  ============================ */
 
   const exportExcel = () => {
 
-    if (earnings.length === 0) return;
+    if (tours.length === 0) return;
 
-    const worksheetData = earnings.map((item) => ({
-      Date: item.paymentDateTime
-        ? new Date(item.paymentDateTime).toLocaleDateString()
-        : "-",
-      Amount: item.amount
+    const worksheetData = tours.map((t) => ({
+      Reference: t.referenceid || t.referenceId,
+      Tourist: t.touristname || t.touristName,
+      StartDate: t.startdate || t.startDate,
+      EndDate: t.enddate || t.endDate,
+      Driver: t.drivername || t.driverName,
+      Vehicle: t.vehiclename || t.vehicleName,
+      Package: t.packagename || t.packageName,
+      Cost: t.cost
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Earnings");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tours");
 
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
@@ -200,14 +208,14 @@ function EarningReports() {
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     });
 
-    saveAs(data, "earnings-report.xlsx");
+    saveAs(data, "tour-report.xlsx");
   };
 
   return (
 
     <div className="p-6 space-y-6">
 
-      <h1 className="text-2xl font-bold">Earning Report</h1>
+      <h1 className="text-2xl font-bold">Tour Reports</h1>
 
       {/* FILTER */}
 
@@ -234,14 +242,14 @@ function EarningReports() {
         </div>
 
         <button
-          onClick={fetchReport}
+          onClick={generateReport}
           className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
         >
-          {loading ? "Loading..." : "Generate"}
+          Generate
         </button>
 
         <button
-          disabled={earnings.length === 0}
+          disabled={tours.length === 0}
           onClick={exportPDF}
           className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 disabled:opacity-40"
         >
@@ -249,7 +257,7 @@ function EarningReports() {
         </button>
 
         <button
-          disabled={earnings.length === 0}
+          disabled={tours.length === 0}
           onClick={exportExcel}
           className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-40"
         >
@@ -258,28 +266,22 @@ function EarningReports() {
 
       </div>
 
-
-      {/* TOTAL */}
-
-      <div className="bg-green-100 border border-green-300 p-4 rounded">
-
-        <h2 className="text-lg font-semibold">
-          Total Earnings: LKR {Number(total).toLocaleString()}
-        </h2>
-
-      </div>
-
-
       {/* TABLE */}
 
       <div className="bg-white shadow rounded-lg overflow-x-auto">
 
-        <table className="w-full text-sm min-w-[400px]">
+        <table className="w-full text-sm">
 
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-3 text-left">Payment Date</th>
-              <th className="p-3 text-left">Amount</th>
+              <th className="p-3 text-left">Reference</th>
+              <th className="p-3 text-left">Tourist</th>
+              <th className="p-3 text-left">Start</th>
+              <th className="p-3 text-left">End</th>
+              <th className="p-3 text-left">Driver</th>
+              <th className="p-3 text-left">Vehicle</th>
+              <th className="p-3 text-left">Package</th>
+              <th className="p-3 text-left">Cost</th>
             </tr>
           </thead>
 
@@ -287,34 +289,45 @@ function EarningReports() {
 
             {loading && (
               <tr>
-                <td colSpan="2" className="text-center p-6">
+                <td colSpan="8" className="text-center p-6">
                   Loading report...
                 </td>
               </tr>
             )}
 
-            {!loading && earnings.length === 0 && (
+            {!loading && tours.length === 0 && (
               <tr>
-                <td colSpan="2" className="text-center p-6 text-gray-500">
-                  No data found
+                <td colSpan="8" className="text-center p-6 text-gray-500">
+                  No tours found
                 </td>
               </tr>
             )}
 
-            {earnings.map((item, index) => (
+            {tours.map((tour, index) => (
+
               <tr key={index} className="border-t">
 
+                <td className="p-3">{tour.referenceid || tour.referenceId}</td>
+                <td className="p-3">{tour.touristname || tour.touristName}</td>
+
                 <td className="p-3">
-                  {item.paymentDateTime
-                    ? new Date(item.paymentDateTime).toLocaleDateString()
-                    : "-"}
+                  {new Date(tour.startdate || tour.startDate).toLocaleDateString()}
                 </td>
 
+                <td className="p-3">
+                  {new Date(tour.enddate || tour.endDate).toLocaleDateString()}
+                </td>
+
+                <td className="p-3">{tour.drivername || tour.driverName || "-"}</td>
+                <td className="p-3">{tour.vehiclename || tour.vehicleName || "-"}</td>
+                <td className="p-3">{tour.packagename || tour.packageName || "-"}</td>
+
                 <td className="p-3 font-semibold text-green-600">
-                  LKR {Number(item.amount).toLocaleString()}
+                  LKR {tour.cost}
                 </td>
 
               </tr>
+
             ))}
 
           </tbody>
@@ -324,7 +337,8 @@ function EarningReports() {
       </div>
 
     </div>
+
   );
 }
 
-export default EarningReports;
+export default TourReports;
