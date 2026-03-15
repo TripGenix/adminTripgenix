@@ -336,8 +336,8 @@ const handleSubmit = async (e) => {
               const file = e.target.files[0];
               if (!file) return;
 
-             // setImageFile(file);
-              setImagePreview(URL.createObjectURL(file)); // 👈 preview
+              setImageFile(file);
+              setImagePreview(URL.createObjectURL(file)); 
   }}
           />
           </Field>
